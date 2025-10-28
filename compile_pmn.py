@@ -1039,8 +1039,6 @@ class PMNCompiler:
             logger.error(f"PMN compilation failed: {e}")
             self._update_progress(0, 'FAILED')
             raise
-        finally:
-            self.cleanup()
 
 
 def main():
