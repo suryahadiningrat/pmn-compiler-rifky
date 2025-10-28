@@ -1,0 +1,42 @@
+# PMN Compiler Requirements
+# Core dependencies for data processing and database connectivity
+
+# Database connectivity
+psycopg2-binary==2.9.9
+
+# Geospatial data processing
+geopandas==0.14.1
+pandas==2.1.4
+shapely==2.0.2
+fiona==1.9.5
+pyproj==3.6.1
+
+# MinIO object storage
+minio==7.2.0
+
+# HTTP requests
+requests==2.31.0
+
+# Additional geospatial tools (optional, for advanced processing)
+rasterio==1.3.9
+
+# System dependencies note:
+# The following tools need to be installed separately on the system:
+# - GDAL/OGR (for ogr2ogr command): brew install gdal (macOS) or apt-get install gdal-bin (Ubuntu)
+# - Tippecanoe (for PMTiles generation): brew install tippecanoe (macOS) or build from source
+#
+# Installation commands:
+# macOS:
+#   brew install gdal tippecanoe
+#
+# Ubuntu/Debian:
+#   sudo apt-get update
+#   sudo apt-get install gdal-bin
+#   # For tippecanoe, build from source: https://github.com/felt/tippecanoe
+#
+# Usage:
+#   pip install -r requirements.txt
+#   python compile_pmn.py <process_id> <year>
+#
+# Example:
+#   python compile_pmn.py "proc_001" 2025
