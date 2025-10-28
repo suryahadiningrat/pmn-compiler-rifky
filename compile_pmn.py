@@ -600,9 +600,17 @@ class PMNCompiler:
                         else:
                             logger.info(f"Matching potensi columns ({len(matching_potensi_cols)}): {matching_potensi_cols}")
                             
-                            # Fetch data
+                            # Build select fields with 2D geometry coercion when applicable
+                            select_fields = []
+                            for col in matching_potensi_cols:
+                                if col.lower() == 'geometry':
+                                    select_fields.append("ST_Force2D(geometry) AS geometry")
+                                else:
+                                    select_fields.append(col)
+                            
+                            # Fetch data with coerced geometry
                             bpdas_cursor.execute(f"""
-                                SELECT {', '.join(matching_potensi_cols)} 
+                                SELECT {', '.join(select_fields)} 
                                 FROM public.potensi_{self.year}
                             """)
                             
@@ -643,9 +651,17 @@ class PMNCompiler:
                         else:
                             logger.info(f"Matching existing columns ({len(matching_existing_cols)}): {matching_existing_cols}")
                             
-                            # Fetch data
+                            # Build select fields with 2D geometry coercion when applicable
+                            select_fields = []
+                            for col in matching_existing_cols:
+                                if col.lower() == 'geometry':
+                                    select_fields.append("ST_Force2D(geometry) AS geometry")
+                                else:
+                                    select_fields.append(col)
+                            
+                            # Fetch data with coerced geometry
                             bpdas_cursor.execute(f"""
-                                SELECT {', '.join(matching_existing_cols)} 
+                                SELECT {', '.join(select_fields)} 
                                 FROM public.existing_{self.year}
                             """)
                             
