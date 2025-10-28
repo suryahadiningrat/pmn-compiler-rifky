@@ -880,28 +880,46 @@ class PMNCompiler:
             geojson_files = {}
             
             # Export existing data
+            logger.info("Exporting existing data...")
             existing_gdf = gpd.read_postgis(
                 f"SELECT * FROM pmn.existing_{self.year}_copy1",
                 conn,
                 geom_col='geometry'
             )
             
+            # Log data info
+            logger.info(f"Existing data shape: {existing_gdf.shape}")
+            logger.info(f"Existing columns: {list(existing_gdf.columns)}")
+            logger.info("Existing data types:")
+            for col, dtype in existing_gdf.dtypes.items():
+                if col != 'geometry':
+                    logger.info(f"  {col}: {dtype}")
+            
             existing_file = os.path.join(self.temp_dir, f'existing_{self.year}.geojson')
             existing_gdf.to_file(existing_file, driver='GeoJSON')
             geojson_files['existing'] = existing_file
-            logger.info(f"Exported existing data: {len(existing_gdf)} features")
+            logger.info(f"✓ Exported existing: {len(existing_gdf)} features, {os.path.getsize(existing_file):,} bytes")
             
             # Export potensi data
+            logger.info("Exporting potensi data...")
             potensi_gdf = gpd.read_postgis(
                 f"SELECT * FROM pmn.potensi_{self.year}_copy1",
                 conn,
                 geom_col='geometry'
             )
             
+            # Log data info
+            logger.info(f"Potensi data shape: {potensi_gdf.shape}")
+            logger.info(f"Potensi columns: {list(potensi_gdf.columns)}")
+            logger.info("Potensi data types:")
+            for col, dtype in potensi_gdf.dtypes.items():
+                if col != 'geometry':
+                    logger.info(f"  {col}: {dtype}")
+            
             potensi_file = os.path.join(self.temp_dir, f'potensi_{self.year}.geojson')
             potensi_gdf.to_file(potensi_file, driver='GeoJSON')
             geojson_files['potensi'] = potensi_file
-            logger.info(f"Exported potensi data: {len(potensi_gdf)} features")
+            logger.info(f"✓ Exported potensi: {len(potensi_gdf)} features, {os.path.getsize(potensi_file):,} bytes")
             
             conn.close()
             
@@ -912,8 +930,10 @@ class PMNCompiler:
             
         except Exception as e:
             logger.error(f"Step 7 failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             raise
-
+    
     def step_8_convert_formats(self, geojson_files: Dict[str, str]) -> Dict[str, Dict[str, str]]:
         """Step 8: Konversi Format (80%)"""
         logger.info("Step 8: Converting formats...")
@@ -926,43 +946,168 @@ class PMNCompiler:
                 
                 # Read GeoJSON
                 gdf = gpd.read_file(geojson_file)
+                logger.info(f"Read {theme} GeoJSON: {len(gdf)} features")
+                logger.info(f"Original columns ({len(gdf.columns)}): {list(gdf.columns)}")
+                logger.info(f"Data types:\n{gdf.dtypes}")
                 
-                # Convert to Shapefile
+                # ========== PREPARE FOR SHAPEFILE ==========
+                # Create a copy for Shapefile (needs special handling)
+                gdf_shp = gdf.copy()
+                
+                # 1. Convert datetime columns to string
+                datetime_cols = []
+                for col in gdf_shp.columns:
+                    if col == 'geometry':
+                        continue
+                    
+                    # Check for datetime types
+                    if pd.api.types.is_datetime64_any_dtype(gdf_shp[col]):
+                        datetime_cols.append(col)
+                        logger.info(f"Converting datetime column '{col}' to string")
+                        # Convert to string, handle NaT
+                        gdf_shp[col] = gdf_shp[col].apply(
+                            lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else ''
+                        )
+                
+                logger.info(f"Converted {len(datetime_cols)} datetime columns: {datetime_cols}")
+                
+                # 2. Handle other problematic data types
+                for col in gdf_shp.columns:
+                    if col == 'geometry':
+                        continue
+                    
+                    # Convert object types that might contain datetime
+                    if gdf_shp[col].dtype == 'object':
+                        # Check if it's a datetime string
+                        sample = gdf_shp[col].dropna().head(1)
+                        if len(sample) > 0:
+                            try:
+                                pd.to_datetime(sample.iloc[0])
+                                logger.info(f"Column '{col}' contains datetime strings, keeping as string")
+                                gdf_shp[col] = gdf_shp[col].fillna('').astype(str)
+                            except:
+                                # Not datetime, keep as is but ensure no None values
+                                gdf_shp[col] = gdf_shp[col].fillna('')
+                
+                # 3. Truncate column names to 10 characters (Shapefile limitation)
+                column_mapping = {}
+                used_names = set()
+                
+                for col in gdf_shp.columns:
+                    if col == 'geometry':
+                        continue
+                        
+                    if len(col) > 10:
+                        # Create short name
+                        base_name = col[:10]
+                        new_col = base_name
+                        
+                        # Ensure uniqueness
+                        counter = 1
+                        while new_col in used_names or new_col in gdf_shp.columns:
+                            new_col = col[:8] + f"{counter:02d}"
+                            counter += 1
+                            if counter > 99:  # Safety limit
+                                new_col = col[:7] + f"{counter:03d}"
+                        
+                        column_mapping[col] = new_col
+                        used_names.add(new_col)
+                        logger.info(f"Truncating column: '{col}' -> '{new_col}'")
+                    else:
+                        used_names.add(col)
+                
+                if column_mapping:
+                    gdf_shp = gdf_shp.rename(columns=column_mapping)
+                    logger.info(f"Renamed {len(column_mapping)} columns for Shapefile")
+                
+                # 4. Final data type check
+                logger.info("Final Shapefile data types:")
+                for col in gdf_shp.columns:
+                    if col != 'geometry':
+                        logger.info(f"  {col}: {gdf_shp[col].dtype}")
+                
+                # ========== CREATE SHAPEFILE ==========
                 shp_dir = os.path.join(self.temp_dir, f'{theme}_shp')
                 os.makedirs(shp_dir, exist_ok=True)
                 shp_file = os.path.join(shp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.shp')
-                gdf.to_file(shp_file, driver='ESRI Shapefile')
                 
-                # Zip Shapefile
+                try:
+                    logger.info(f"Creating Shapefile for {theme}...")
+                    gdf_shp.to_file(shp_file, driver='ESRI Shapefile', encoding='utf-8')
+                    logger.info(f"✓ Shapefile created successfully: {shp_file}")
+                except Exception as e:
+                    logger.error(f"Failed to create Shapefile: {e}")
+                    logger.info("Attempting additional data cleaning...")
+                    
+                    # Last resort: convert everything to string except geometry and numeric
+                    for col in gdf_shp.columns:
+                        if col == 'geometry':
+                            continue
+                        
+                        if gdf_shp[col].dtype not in ['int64', 'float64', 'bool', 'Int64', 'Float64']:
+                            logger.info(f"Converting '{col}' to string as fallback")
+                            gdf_shp[col] = gdf_shp[col].astype(str).replace('NaT', '').replace('nan', '').replace('None', '')
+                    
+                    gdf_shp.to_file(shp_file, driver='ESRI Shapefile', encoding='utf-8')
+                    logger.info(f"✓ Shapefile created after additional cleaning")
+                
+                # ========== ZIP SHAPEFILE ==========
                 shp_zip = os.path.join(self.temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.zip')
-                with zipfile.ZipFile(shp_zip, 'w') as zipf:
-                    for ext in ['.shp', '.shx', '.dbf', '.prj', '.cpg']:
+                
+                with zipfile.ZipFile(shp_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    extensions = ['.shp', '.shx', '.dbf', '.prj', '.cpg']
+                    for ext in extensions:
                         file_path = shp_file.replace('.shp', ext)
                         if os.path.exists(file_path):
                             zipf.write(file_path, os.path.basename(file_path))
+                            logger.info(f"  Added {ext} to zip")
                 
+                shp_size = os.path.getsize(shp_zip)
                 theme_files['shp_zip'] = shp_zip
+                logger.info(f"✓ Shapefile zip created: {shp_zip} ({shp_size:,} bytes)")
                 
-                # Convert to GDB using ogr2ogr
+                # ========== CREATE GDB (using original geojson - supports datetime) ==========
                 gdb_dir = os.path.join(self.temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb')
-                subprocess.run([
-                    'ogr2ogr', '-f', 'OpenFileGDB', '-dim', 'XY', gdb_dir, geojson_file
-                ], check=True)
                 
-                # Zip GDB
+                try:
+                    logger.info(f"Creating GDB for {theme}...")
+                    
+                    # Use ogr2ogr with OpenFileGDB driver
+                    result = subprocess.run([
+                        'ogr2ogr',
+                        '-f', 'OpenFileGDB',
+                        '-dim', 'XY',  # Force 2D
+                        '-nln', f'PETAMANGROVE_{theme.upper()}_{self.year}',  # Layer name
+                        gdb_dir,
+                        geojson_file
+                    ], check=True, capture_output=True, text=True)
+                    
+                    logger.info(f"✓ GDB created successfully: {gdb_dir}")
+                    
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"ogr2ogr failed for {theme}:")
+                    logger.error(f"  stdout: {e.stdout}")
+                    logger.error(f"  stderr: {e.stderr}")
+                    raise
+                
+                # ========== ZIP GDB ==========
                 gdb_zip = os.path.join(self.temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb.zip')
-                with zipfile.ZipFile(gdb_zip, 'w') as zipf:
+                
+                with zipfile.ZipFile(gdb_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
                     for root, dirs, files in os.walk(gdb_dir):
                         for file in files:
                             file_path = os.path.join(root, file)
                             arcname = os.path.relpath(file_path, os.path.dirname(gdb_dir))
                             zipf.write(file_path, arcname)
                 
+                gdb_size = os.path.getsize(gdb_zip)
                 theme_files['gdb_zip'] = gdb_zip
                 theme_files['gdb_dir'] = gdb_dir
+                logger.info(f"✓ GDB zip created: {gdb_zip} ({gdb_size:,} bytes)")
                 
                 converted_files[theme] = theme_files
-                logger.info(f"Converted {theme} to Shapefile and GDB")
+                logger.info(f"✓ Completed conversion for {theme}")
+                logger.info("=" * 60)
             
             self._update_progress(80)
             logger.info("Step 8 completed: Format conversion finished")
@@ -971,8 +1116,10 @@ class PMNCompiler:
             
         except Exception as e:
             logger.error(f"Step 8 failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             raise
-
+    
     def step_9_generate_pmtiles(self, geojson_files: Dict[str, str]) -> Dict[str, str]:
         """Step 9: Generate PMTiles (90%)"""
         logger.info("Step 9: Generating PMTiles...")
