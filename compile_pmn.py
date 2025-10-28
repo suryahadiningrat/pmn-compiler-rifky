@@ -444,34 +444,88 @@ class PMNCompiler:
             conn = self._get_db_connection()
             cursor = conn.cursor()
             
-            # Check if tables exist
-            tables_to_check = [
-                f'pmn.existing_{self.year}_copy1',
-                f'pmn.potensi_{self.year}_copy1'
-            ]
+            # Drop dan recreate tables untuk memastikan struktur yang benar
+            tables_config = {
+                f'existing_{self.year}_copy1': """
+                    CREATE TABLE IF NOT EXISTS pmn.existing_{year}_copy1 (
+                        ogc_fid SERIAL PRIMARY KEY,
+                        geometry GEOMETRY(MultiPolygon, 4326),
+                        bpdas VARCHAR(255),
+                        kttj VARCHAR(255),
+                        smbdt TEXT,
+                        thnbuat VARCHAR(50),
+                        ints VARCHAR(255),
+                        remark TEXT,
+                        struktur_v VARCHAR(255),
+                        lsmgr NUMERIC,
+                        shape_leng NUMERIC,
+                        shape_area NUMERIC,
+                        namobj VARCHAR(255),
+                        fcode VARCHAR(50),
+                        lcode VARCHAR(50),
+                        srs_id INTEGER,
+                        metadata VARCHAR(255),
+                        kode_prov VARCHAR(10),
+                        fungsikws VARCHAR(255),
+                        noskkws VARCHAR(255),
+                        tglskkws TIMESTAMP,
+                        lskkws NUMERIC,
+                        kawasan VARCHAR(255),
+                        konservasi VARCHAR(255),
+                        kab VARCHAR(255),
+                        prov VARCHAR(255),
+                        status_p VARCHAR(255),
+                        alasan_p TEXT,
+                        kttj_p VARCHAR(255),
+                        catatan_p TEXT
+                    )
+                """,
+                f'potensi_{self.year}_copy1': """
+                    CREATE TABLE IF NOT EXISTS pmn.potensi_{year}_copy1 (
+                        ogc_fid SERIAL PRIMARY KEY,
+                        geometry GEOMETRY(MultiPolygon, 4326),
+                        tahun VARCHAR(50),
+                        objectid INTEGER,
+                        bpdas VARCHAR(255),
+                        kab VARCHAR(255),
+                        prov VARCHAR(255),
+                        smbrdt TEXT,
+                        thnbuat VARCHAR(50),
+                        ints VARCHAR(255),
+                        ktrgn TEXT,
+                        keterangan TEXT,
+                        alasan TEXT,
+                        remark TEXT,
+                        klshtn VARCHAR(255),
+                        kws VARCHAR(255),
+                        namobj VARCHAR(255),
+                        kawasan VARCHAR(255),
+                        lspmgr NUMERIC,
+                        status_p VARCHAR(255),
+                        alasan_p TEXT,
+                        ptrmgr_p VARCHAR(255),
+                        catatan_p TEXT
+                    )
+                """
+            }
             
-            for table in tables_to_check:
-                cursor.execute("""
+            for table_name, create_sql in tables_config.items():
+                cursor.execute(f"""
                     SELECT EXISTS (
                         SELECT FROM information_schema.tables 
                         WHERE table_schema = 'pmn' 
                         AND table_name = %s
                     )
-                """, (table.split('.')[1],))
+                """, (table_name,))
                 
                 exists = cursor.fetchone()[0]
-                if not exists:
-                    # Create table if not exists
-                    cursor.execute(f"""
-                        CREATE TABLE IF NOT EXISTS {table} (
-                            id SERIAL PRIMARY KEY,
-                            geometry GEOMETRY,
-                            created_at TIMESTAMP DEFAULT NOW()
-                        )
-                    """)
-                    logger.info(f"Created table: {table}")
+                
+                if exists:
+                    logger.info(f"Table exists: pmn.{table_name}")
                 else:
-                    logger.info(f"Table exists: {table}")
+                    # Create table with proper structure
+                    cursor.execute(create_sql.format(year=self.year))
+                    logger.info(f"Created table: pmn.{table_name}")
             
             conn.commit()
             cursor.close()
@@ -553,26 +607,6 @@ class PMNCompiler:
             target_conn = self._get_db_connection()
             target_cursor = target_conn.cursor()
             
-            # Get target table structures first
-            target_cursor.execute("""
-                SELECT column_name, data_type 
-                FROM information_schema.columns 
-                WHERE table_schema = 'pmn' AND table_name = %s
-                ORDER BY ordinal_position
-            """, (f'existing_{self.year}_copy1',))
-            existing_target_cols = {row[0]: row[1] for row in target_cursor.fetchall()}
-            
-            target_cursor.execute("""
-                SELECT column_name, data_type 
-                FROM information_schema.columns 
-                WHERE table_schema = 'pmn' AND table_name = %s
-                ORDER BY ordinal_position
-            """, (f'potensi_{self.year}_copy1',))
-            potensi_target_cols = {row[0]: row[1] for row in target_cursor.fetchall()}
-            
-            logger.info(f"Target existing columns: {list(existing_target_cols.keys())}")
-            logger.info(f"Target potensi columns: {list(potensi_target_cols.keys())}")
-            
             for bpdas_db in bpdas_list:
                 logger.info(f"Processing BPDAS: {bpdas_db}")
                 
@@ -583,123 +617,193 @@ class PMNCompiler:
                     
                     # ========== PROCESS POTENSI DATA ==========
                     try:
-                        # Get source table columns
+                        # Check if table exists
                         bpdas_cursor.execute("""
-                            SELECT column_name 
-                            FROM information_schema.columns 
-                            WHERE table_schema = 'public' AND table_name = %s
-                            ORDER BY ordinal_position
+                            SELECT EXISTS (
+                                SELECT FROM information_schema.tables 
+                                WHERE table_schema = 'public' 
+                                AND table_name = %s
+                            )
                         """, (f'potensi_{self.year}',))
-                        source_potensi_cols = [row[0] for row in bpdas_cursor.fetchall()]
                         
-                        # Find matching columns
-                        matching_potensi_cols = [col for col in source_potensi_cols if col in potensi_target_cols]
-                        
-                        if not matching_potensi_cols:
-                            logger.warning(f"No matching columns found for potensi_{self.year} in {bpdas_db}")
+                        if not bpdas_cursor.fetchone()[0]:
+                            logger.warning(f"Table potensi_{self.year} not found in {bpdas_db}")
                         else:
-                            logger.info(f"Matching potensi columns ({len(matching_potensi_cols)}): {matching_potensi_cols}")
+                            # Get source table columns
+                            bpdas_cursor.execute("""
+                                SELECT column_name 
+                                FROM information_schema.columns 
+                                WHERE table_schema = 'public' AND table_name = %s
+                                ORDER BY ordinal_position
+                            """, (f'potensi_{self.year}',))
+                            source_potensi_cols = [row[0] for row in bpdas_cursor.fetchall()]
                             
-                            # Build select fields with 2D geometry coercion when applicable
-                            select_fields = []
-                            for col in matching_potensi_cols:
-                                if col.lower() == 'geometry':
-                                    select_fields.append("ST_Force2D(geometry) AS geometry")
-                                else:
-                                    select_fields.append(col)
+                            # Get target table columns
+                            target_cursor.execute("""
+                                SELECT column_name 
+                                FROM information_schema.columns 
+                                WHERE table_schema = 'pmn' AND table_name = %s
+                                AND column_name != 'ogc_fid'
+                                ORDER BY ordinal_position
+                            """, (f'potensi_{self.year}_copy1',))
+                            target_cols = [row[0] for row in target_cursor.fetchall()]
                             
-                            # Fetch data with coerced geometry
-                            bpdas_cursor.execute(f"""
-                                SELECT {', '.join(select_fields)} 
-                                FROM public.potensi_{self.year}
-                            """)
+                            # Find matching columns
+                            matching_cols = [col for col in source_potensi_cols if col in target_cols]
                             
-                            potensi_data = bpdas_cursor.fetchall()
-                            
-                            if potensi_data:
-                                # Bulk insert using execute_batch for better performance
-                                insert_query = f"""
-                                    INSERT INTO pmn.potensi_{self.year}_copy1 
-                                    ({', '.join(matching_potensi_cols)}) 
-                                    VALUES ({', '.join(['%s'] * len(matching_potensi_cols))})
-                                """
-                                
-                                psycopg2.extras.execute_batch(target_cursor, insert_query, potensi_data)
-                                logger.info(f"Inserted {len(potensi_data)} potensi records from {bpdas_db}")
+                            if not matching_cols:
+                                logger.warning(f"No matching columns for potensi_{self.year} in {bpdas_db}")
                             else:
-                                logger.info(f"No potensi data found in {bpdas_db}")
+                                logger.info(f"Matching potensi columns ({len(matching_cols)}): {matching_cols[:5]}...")
                                 
+                                # Build select with geometry conversion
+                                select_fields = []
+                                for col in matching_cols:
+                                    if col.lower() == 'geometry':
+                                        select_fields.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                    else:
+                                        select_fields.append(f'"{col}"')  # Quote column names
+                                
+                                # Fetch data
+                                query = f"""
+                                    SELECT {', '.join(select_fields)} 
+                                    FROM public.potensi_{self.year}
+                                    WHERE geometry IS NOT NULL
+                                """
+                                bpdas_cursor.execute(query)
+                                potensi_data = bpdas_cursor.fetchall()
+                                
+                                if potensi_data:
+                                    # Bulk insert
+                                    insert_query = f"""
+                                        INSERT INTO pmn.potensi_{self.year}_copy1 
+                                        ({', '.join([f'"{col}"' for col in matching_cols])}) 
+                                        VALUES ({', '.join(['%s'] * len(matching_cols))})
+                                    """
+                                    
+                                    psycopg2.extras.execute_batch(
+                                        target_cursor, 
+                                        insert_query, 
+                                        potensi_data,
+                                        page_size=1000
+                                    )
+                                    logger.info(f"✓ Inserted {len(potensi_data)} potensi records from {bpdas_db}")
+                                else:
+                                    logger.info(f"No potensi data in {bpdas_db}")
+                                    
                     except psycopg2.Error as e:
-                        logger.warning(f"Failed to process potensi data from {bpdas_db}: {e}")
+                        logger.warning(f"Failed to process potensi from {bpdas_db}: {e}")
                     
                     # ========== PROCESS EXISTING DATA ==========
                     try:
-                        # Get source table columns
+                        # Check if table exists
                         bpdas_cursor.execute("""
-                            SELECT column_name 
-                            FROM information_schema.columns 
-                            WHERE table_schema = 'public' AND table_name = %s
-                            ORDER BY ordinal_position
+                            SELECT EXISTS (
+                                SELECT FROM information_schema.tables 
+                                WHERE table_schema = 'public' 
+                                AND table_name = %s
+                            )
                         """, (f'existing_{self.year}',))
-                        source_existing_cols = [row[0] for row in bpdas_cursor.fetchall()]
                         
-                        # Find matching columns
-                        matching_existing_cols = [col for col in source_existing_cols if col in existing_target_cols]
-                        
-                        if not matching_existing_cols:
-                            logger.warning(f"No matching columns found for existing_{self.year} in {bpdas_db}")
+                        if not bpdas_cursor.fetchone()[0]:
+                            logger.warning(f"Table existing_{self.year} not found in {bpdas_db}")
                         else:
-                            logger.info(f"Matching existing columns ({len(matching_existing_cols)}): {matching_existing_cols}")
+                            # Get source table columns
+                            bpdas_cursor.execute("""
+                                SELECT column_name 
+                                FROM information_schema.columns 
+                                WHERE table_schema = 'public' AND table_name = %s
+                                ORDER BY ordinal_position
+                            """, (f'existing_{self.year}',))
+                            source_existing_cols = [row[0] for row in bpdas_cursor.fetchall()]
                             
-                            # Build select fields with 2D geometry coercion when applicable
-                            select_fields = []
-                            for col in matching_existing_cols:
-                                if col.lower() == 'geometry':
-                                    select_fields.append("ST_Force2D(geometry) AS geometry")
-                                else:
-                                    select_fields.append(col)
+                            # Get target table columns
+                            target_cursor.execute("""
+                                SELECT column_name 
+                                FROM information_schema.columns 
+                                WHERE table_schema = 'pmn' AND table_name = %s
+                                AND column_name != 'ogc_fid'
+                                ORDER BY ordinal_position
+                            """, (f'existing_{self.year}_copy1',))
+                            target_cols = [row[0] for row in target_cursor.fetchall()]
                             
-                            # Fetch data with coerced geometry
-                            bpdas_cursor.execute(f"""
-                                SELECT {', '.join(select_fields)} 
-                                FROM public.existing_{self.year}
-                            """)
+                            # Find matching columns
+                            matching_cols = [col for col in source_existing_cols if col in target_cols]
                             
-                            existing_data = bpdas_cursor.fetchall()
-                            
-                            if existing_data:
-                                # Bulk insert using execute_batch
-                                insert_query = f"""
-                                    INSERT INTO pmn.existing_{self.year}_copy1 
-                                    ({', '.join(matching_existing_cols)}) 
-                                    VALUES ({', '.join(['%s'] * len(matching_existing_cols))})
-                                """
-                                
-                                psycopg2.extras.execute_batch(target_cursor, insert_query, existing_data)
-                                logger.info(f"Inserted {len(existing_data)} existing records from {bpdas_db}")
+                            if not matching_cols:
+                                logger.warning(f"No matching columns for existing_{self.year} in {bpdas_db}")
                             else:
-                                logger.info(f"No existing data found in {bpdas_db}")
+                                logger.info(f"Matching existing columns ({len(matching_cols)}): {matching_cols[:5]}...")
                                 
+                                # Build select with geometry conversion
+                                select_fields = []
+                                for col in matching_cols:
+                                    if col.lower() == 'geometry':
+                                        select_fields.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                    else:
+                                        select_fields.append(f'"{col}"')
+                                
+                                # Fetch data
+                                query = f"""
+                                    SELECT {', '.join(select_fields)} 
+                                    FROM public.existing_{self.year}
+                                    WHERE geometry IS NOT NULL
+                                """
+                                bpdas_cursor.execute(query)
+                                existing_data = bpdas_cursor.fetchall()
+                                
+                                if existing_data:
+                                    # Bulk insert
+                                    insert_query = f"""
+                                        INSERT INTO pmn.existing_{self.year}_copy1 
+                                        ({', '.join([f'"{col}"' for col in matching_cols])}) 
+                                        VALUES ({', '.join(['%s'] * len(matching_cols))})
+                                    """
+                                    
+                                    psycopg2.extras.execute_batch(
+                                        target_cursor, 
+                                        insert_query, 
+                                        existing_data,
+                                        page_size=1000
+                                    )
+                                    logger.info(f"✓ Inserted {len(existing_data)} existing records from {bpdas_db}")
+                                else:
+                                    logger.info(f"No existing data in {bpdas_db}")
+                                    
                     except psycopg2.Error as e:
-                        logger.warning(f"Failed to process existing data from {bpdas_db}: {e}")
+                        logger.warning(f"Failed to process existing from {bpdas_db}: {e}")
                     
-                    # Commit after each BPDAS to avoid losing all data on error
+                    # Commit after each BPDAS
                     target_conn.commit()
                     
                     bpdas_cursor.close()
                     bpdas_conn.close()
                     
-                    logger.info(f"Completed aggregation for BPDAS: {bpdas_db}")
+                    logger.info(f"✓ Completed BPDAS: {bpdas_db}")
                     
                 except psycopg2.OperationalError as e:
-                    logger.warning(f"Failed to connect to BPDAS database {bpdas_db}: {e}")
+                    logger.warning(f"✗ Cannot connect to {bpdas_db}: {e}")
                     continue
                 except Exception as e:
-                    logger.warning(f"Unexpected error processing BPDAS {bpdas_db}: {e}")
+                    logger.warning(f"✗ Error processing {bpdas_db}: {e}")
                     continue
             
             # Final commit
             target_conn.commit()
+            
+            # Log summary
+            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.existing_{self.year}_copy1")
+            existing_count = target_cursor.fetchone()[0]
+            
+            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.potensi_{self.year}_copy1")
+            potensi_count = target_cursor.fetchone()[0]
+            
+            logger.info("=" * 60)
+            logger.info("AGGREGATION SUMMARY:")
+            logger.info(f"  Total existing records: {existing_count}")
+            logger.info(f"  Total potensi records: {potensi_count}")
+            logger.info("=" * 60)
+            
             target_cursor.close()
             target_conn.close()
             
