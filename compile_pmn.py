@@ -1076,30 +1076,37 @@ class PMNCompiler:
                     gdf_for_gdb = gpd.read_file(geojson_file)
                     
                     # Remove ogc_fid or fid columns if they exist
-                    fid_columns = [col for col in gdf_for_gdb.columns if col.lower() in ['ogc_fid', 'fid', 'id']]
+                    fid_columns = [col for col in gdf_for_gdb.columns if col.lower() in ['ogc_fid', 'fid', 'id', 'objectid']]
                     if fid_columns:
                         logger.info(f"Removing FID columns for GDB: {fid_columns}")
                         gdf_for_gdb = gdf_for_gdb.drop(columns=fid_columns)
                     
-                    # Create temporary GeoJSON without FID
-                    temp_geojson = geojson_file.replace('.geojson', '_no_fid.geojson')
-                    gdf_for_gdb.to_file(temp_geojson, driver='GeoJSON')
-                    logger.info(f"Created temporary GeoJSON without FID fields")
+                    # Reset index to ensure clean sequential numbering
+                    gdf_for_gdb = gdf_for_gdb.reset_index(drop=True)
                     
-                    # Use ogr2ogr with OpenFileGDB driver
-                    # -dim XY: Force 2D geometry
+                    # Create temporary Shapefile (which doesn't have ID issues) then convert to GDB
+                    temp_shp_dir = os.path.join(self.temp_dir, f'{theme}_temp_for_gdb')
+                    os.makedirs(temp_shp_dir, exist_ok=True)
+                    temp_shp = os.path.join(temp_shp_dir, f'{theme}_temp.shp')
+                    
+                    # Save to Shapefile first (Shapefile will auto-generate sequential FIDs)
+                    gdf_for_gdb.to_file(temp_shp, driver='ESRI Shapefile')
+                    logger.info(f"Created temporary Shapefile for GDB conversion")
+                    
+                    # Convert Shapefile to GDB (this avoids GeoJSON ID issues)
                     result = subprocess.run([
                         'ogr2ogr',
                         '-f', 'OpenFileGDB',
                         '-dim', 'XY',  # Force 2D
                         '-nln', f'PETAMANGROVE_{theme.upper()}_{self.year}',  # Layer name
                         gdb_dir,
-                        temp_geojson
+                        temp_shp
                     ], check=True, capture_output=True, text=True)
                     
-                    # Clean up temporary file
-                    if os.path.exists(temp_geojson):
-                        os.remove(temp_geojson)
+                    # Clean up temporary shapefile directory
+                    import shutil
+                    if os.path.exists(temp_shp_dir):
+                        shutil.rmtree(temp_shp_dir)
                     
                     logger.info(f"✓ GDB created successfully: {gdb_dir}")
                     
