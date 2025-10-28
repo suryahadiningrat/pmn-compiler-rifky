@@ -826,7 +826,7 @@ class PMNCompiler:
                 # Convert to GDB using ogr2ogr
                 gdb_dir = os.path.join(self.temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb')
                 subprocess.run([
-                    'ogr2ogr', '-f', 'FileGDB', gdb_dir, geojson_file
+                    'ogr2ogr', '-f', 'OpenFileGDB', gdb_dir, geojson_file
                 ], check=True)
                 
                 # Zip GDB
