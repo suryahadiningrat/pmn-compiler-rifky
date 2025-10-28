@@ -1081,6 +1081,18 @@ class PMNCompiler:
                         logger.info(f"Removing FID columns for GDB: {fid_columns}")
                         gdf_for_gdb = gdf_for_gdb.drop(columns=fid_columns)
                     
+                    # Convert datetime columns to string for Shapefile compatibility
+                    datetime_cols_gdb = []
+                    for col in gdf_for_gdb.columns:
+                        if col == 'geometry':
+                            continue
+                        if pd.api.types.is_datetime64_any_dtype(gdf_for_gdb[col]):
+                            datetime_cols_gdb.append(col)
+                            logger.info(f"Converting datetime column '{col}' to string for temp Shapefile")
+                            gdf_for_gdb[col] = gdf_for_gdb[col].apply(
+                                lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else ''
+                            )
+                    
                     # Reset index to ensure clean sequential numbering
                     gdf_for_gdb = gdf_for_gdb.reset_index(drop=True)
                     
