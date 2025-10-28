@@ -1073,10 +1073,13 @@ class PMNCompiler:
                     logger.info(f"Creating GDB for {theme}...")
                     
                     # Use ogr2ogr with OpenFileGDB driver
+                    # -unsetFid: Remove FID to avoid duplicate ID errors
+                    # -dim XY: Force 2D geometry
                     result = subprocess.run([
                         'ogr2ogr',
                         '-f', 'OpenFileGDB',
                         '-dim', 'XY',  # Force 2D
+                        '-unsetFid',  # Remove FID to let ogr2ogr create new sequential IDs
                         '-nln', f'PETAMANGROVE_{theme.upper()}_{self.year}',  # Layer name
                         gdb_dir,
                         geojson_file
