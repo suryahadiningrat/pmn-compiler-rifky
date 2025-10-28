@@ -1072,18 +1072,34 @@ class PMNCompiler:
                 try:
                     logger.info(f"Creating GDB for {theme}...")
                     
+                    # Read GeoJSON and remove ogc_fid to avoid duplicate ID issues
+                    gdf_for_gdb = gpd.read_file(geojson_file)
+                    
+                    # Remove ogc_fid or fid columns if they exist
+                    fid_columns = [col for col in gdf_for_gdb.columns if col.lower() in ['ogc_fid', 'fid', 'id']]
+                    if fid_columns:
+                        logger.info(f"Removing FID columns for GDB: {fid_columns}")
+                        gdf_for_gdb = gdf_for_gdb.drop(columns=fid_columns)
+                    
+                    # Create temporary GeoJSON without FID
+                    temp_geojson = geojson_file.replace('.geojson', '_no_fid.geojson')
+                    gdf_for_gdb.to_file(temp_geojson, driver='GeoJSON')
+                    logger.info(f"Created temporary GeoJSON without FID fields")
+                    
                     # Use ogr2ogr with OpenFileGDB driver
-                    # -unsetFid: Remove FID to avoid duplicate ID errors
                     # -dim XY: Force 2D geometry
                     result = subprocess.run([
                         'ogr2ogr',
                         '-f', 'OpenFileGDB',
                         '-dim', 'XY',  # Force 2D
-                        '-unsetFid',  # Remove FID to let ogr2ogr create new sequential IDs
                         '-nln', f'PETAMANGROVE_{theme.upper()}_{self.year}',  # Layer name
                         gdb_dir,
-                        geojson_file
+                        temp_geojson
                     ], check=True, capture_output=True, text=True)
+                    
+                    # Clean up temporary file
+                    if os.path.exists(temp_geojson):
+                        os.remove(temp_geojson)
                     
                     logger.info(f"✓ GDB created successfully: {gdb_dir}")
                     
