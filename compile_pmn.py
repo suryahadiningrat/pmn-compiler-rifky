@@ -1616,23 +1616,63 @@ class PMNCompiler:
                     try:
                         logger.info(f"Trying tippecanoe-decode layer extraction for {theme}...")
                         
-                        # Try extracting with layer name (common PMTiles structure)
-                        layer_name = f"{theme.upper()}_{year}" 
-                        result = subprocess.run([
-                            'tippecanoe-decode', '-l', layer_name, pmtiles_file
-                        ], capture_output=True, text=True, timeout=300)
+                        # Try extracting with different layer name possibilities
+                        layer_names = [
+                            f"{theme.upper()}_{year}",  # EXISTING_2021
+                            f"{theme.lower()}_{year}",  # existing_2021
+                            theme.upper(),              # EXISTING
+                            theme.lower(),              # existing
+                            f"{theme}_{year}",          # existing_2021
+                            "layer0",                   # default layer name
+                            "data"                      # common layer name
+                        ]
+                        
+                        result = None
+                        successful_layer = None
+                        
+                        for layer_name in layer_names:
+                            try:
+                                logger.debug(f"Trying layer name: {layer_name}")
+                                result = subprocess.run([
+                                    'tippecanoe-decode', '-l', layer_name, pmtiles_file
+                                ], capture_output=True, text=True, timeout=60)
+                                
+                                if result.stdout and len(result.stdout) > 100:
+                                    successful_layer = layer_name
+                                    break
+                            except Exception as e:
+                                logger.debug(f"Layer {layer_name} failed: {e}")
+                                continue
+                        
+                        if successful_layer:
+                            logger.info(f"Found working layer name: {successful_layer}")
                         
                         if result.stdout and len(result.stdout) > 100:
                             try:
                                 import json
                                 json_data = json.loads(result.stdout)
                                 if json_data.get('type') == 'FeatureCollection':
-                                    with open(geojson_file, 'w') as f:
-                                        f.write(result.stdout)
+                                    features = json_data.get('features', [])
+                                    logger.info(f"tippecanoe-decode layer extraction found {len(features)} features")
                                     
-                                    if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
-                                        logger.info(f"✅ tippecanoe-decode layer extraction successful")
-                                        conversion_success = True
+                                    # Check if features have valid geometries
+                                    valid_features = 0
+                                    for feature in features[:10]:  # Check first 10 features
+                                        geom = feature.get('geometry')
+                                        if geom and geom.get('type') and geom.get('coordinates'):
+                                            valid_features += 1
+                                    
+                                    logger.info(f"Sample check: {valid_features}/10 features have valid geometries")
+                                    
+                                    if len(features) > 0 and valid_features > 0:
+                                        with open(geojson_file, 'w') as f:
+                                            f.write(result.stdout)
+                                        
+                                        if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                                            logger.info(f"✅ tippecanoe-decode layer extraction successful")
+                                            conversion_success = True
+                                    else:
+                                        logger.error(f"Layer extraction produced {len(features)} features but no valid geometries")
                                 else:
                                     logger.error(f"Layer extraction output is not valid GeoJSON FeatureCollection")
                             except json.JSONDecodeError:
