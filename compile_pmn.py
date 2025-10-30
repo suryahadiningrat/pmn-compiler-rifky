@@ -1930,70 +1930,69 @@ class PMNCompiler:
                 else:
                     logger.debug(f"Sample geometry {i}: None")
 
-        # Attempt to convert non-polygon geometries to polygons where sensible
+        # Attempt brute force conversion: buffer all non-polygon geometries
+        logger.info(f"Attempting brute force conversion of {len(nonpolygons_gdf)} non-polygon geometries...")
+        
+        # Try multiple buffer sizes 
+        buffer_sizes = [0.0001, 0.001, 0.01]
         converted_records = []
-        conversion_stats = {"LineString": 0, "MultiLineString": 0, "Point": 0, "MultiPoint": 0, "Other": 0}
+        conversion_count = 0
+        
         for idx, row in nonpolygons_gdf.iterrows():
             geom = row.geometry
+            success = False
+            
             try:
                 if geom is None or geom.is_empty:
                     continue
-
-                # Get geometry type safely
-                try:
-                    geom_type = geom.geom_type
-                except Exception as e:
-                    logger.debug(f"Failed to get geom_type for geometry at index {idx}: {e}")
-                    continue
-
-                new_geom = None
-
-                # For lines, try polygonize of the unary union
-                if geom_type in ('LineString', 'MultiLineString'):
+                    
+                # Try each buffer size until one works
+                for buffer_size in buffer_sizes:
                     try:
+                        new_geom = geom.buffer(buffer_size)
+                        
+                        if (new_geom is not None and 
+                            not new_geom.is_empty and 
+                            hasattr(new_geom, 'geom_type') and
+                            new_geom.geom_type in valid_geom_types):
+                            
+                            row.geometry = new_geom
+                            converted_records.append(row)
+                            conversion_count += 1
+                            success = True
+                            break
+                            
+                    except Exception as e:
+                        logger.debug(f"Buffer size {buffer_size} failed for geometry {idx}: {e}")
+                        continue
+                
+                # If standard buffering failed, try polygonize approach for lines
+                if not success:
+                    try:
+                        # Try to detect if it might be a line by attempting polygonize
                         u = unary_union(geom)
                         polys = list(polygonize(u))
                         if polys:
                             new_geom = MultiPolygon(polys) if len(polys) > 1 else polys[0]
-                        else:
-                            # fallback: buffer to generate polygon (use larger buffer)
-                            new_geom = geom.buffer(0.0001)  # Increased buffer size
+                            if (new_geom is not None and 
+                                not new_geom.is_empty and 
+                                hasattr(new_geom, 'geom_type') and
+                                new_geom.geom_type in valid_geom_types):
+                                
+                                row.geometry = new_geom
+                                converted_records.append(row)
+                                conversion_count += 1
+                                success = True
                     except Exception as e:
-                        logger.debug(f"Polygonize failed for {geom_type}: {e}")
-                        new_geom = geom.buffer(0.0001)
-
-                # For points, buffer to create polygon area
-                elif geom_type in ('Point', 'MultiPoint'):
-                    new_geom = geom.buffer(0.0001)  # Increased buffer size
-
-                else:
-                    # Generic fallback: try buffer(0) then larger buffer
-                    try:
-                        candidate = geom.buffer(0)
-                        if candidate.is_empty or candidate.geom_type not in valid_geom_types:
-                            new_geom = geom.buffer(0.0001)  # Increased buffer size
-                        else:
-                            new_geom = candidate
-                    except Exception as e:
-                        logger.debug(f"Buffer operation failed for {geom_type}: {e}")
-                        new_geom = geom.buffer(0.0001)
-
-                # Final validation of new geometry
-                if new_geom is not None and not new_geom.is_empty and new_geom.geom_type in valid_geom_types:
-                    # assign and collect
-                    row.geometry = new_geom
-                    converted_records.append(row)
-                    conversion_stats[geom_type] += 1
-                else:
-                    if new_geom is None:
-                        logger.debug(f"Failed to convert {geom_type}: result is None")
-                    elif new_geom.is_empty:
-                        logger.debug(f"Failed to convert {geom_type}: result is empty")
-                    else:
-                        logger.debug(f"Failed to convert {geom_type}: result type {new_geom.geom_type} not valid")
-
+                        logger.debug(f"Polygonize approach failed for geometry {idx}: {e}")
+                
+                if not success:
+                    logger.debug(f"All conversion attempts failed for geometry {idx}")
+                    
             except Exception as e:
-                logger.warning(f"Failed to convert geometry at index {idx}: {e}")
+                logger.debug(f"Complete failure for geometry {idx}: {e}")
+                
+        logger.info(f"Brute force conversion result: {conversion_count} geometries successfully converted")
 
         converted_gdf = gpd.GeoDataFrame(converted_records, columns=gdf.columns) if converted_records else gpd.GeoDataFrame(columns=gdf.columns)
 
@@ -2002,10 +2001,9 @@ class PMNCompiler:
 
         converted_count = len(converted_gdf)
         if converted_count > 0:
-            logger.info(f"✓ Converted {converted_count} non-polygon geometries into polygons")
-            logger.info(f"Conversion breakdown: {conversion_stats}")
+            logger.info(f"✅ Successfully converted {converted_count} out of {len(nonpolygons_gdf)} non-polygon geometries into polygons")
         else:
-            logger.warning(f"❌ Failed to convert any of the {len(nonpolygons_gdf)} non-polygon geometries")
+            logger.error(f"❌ Failed to convert any of the {len(nonpolygons_gdf)} non-polygon geometries using brute force approach")
 
         total_valid = len(gdf)
         logger.info(f"Final result: {total_valid} total geometries ({len(polygons_gdf)} original polygons + {converted_count} converted)")
