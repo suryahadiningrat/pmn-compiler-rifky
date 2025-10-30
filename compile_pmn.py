@@ -2252,6 +2252,13 @@ class PMNCompiler:
             else:
                 raise Exception(f"GDB validation failed: {gdb_zip}")
             
+            # Update metadata in compiler_datasets
+            pmtiles_path = f"layers/{theme.upper()}{year}.pmtiles"
+            pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{pmtiles_path}"
+            self._update_historical_metadata(year, theme, shp_zip, gdb_zip, pmtiles_url)
+            
+            logger.info(f"✅ Successfully completed conversion and metadata update for {theme} {year}")
+            
         except Exception as e:
             logger.error(f"Failed to convert {theme} for year {year}: {e}")
             raise
@@ -2260,6 +2267,90 @@ class PMNCompiler:
             if os.path.exists(year_temp_dir):
                 import shutil
                 shutil.rmtree(year_temp_dir)
+    
+    def _update_historical_metadata(self, year: int, theme: str, shp_zip: str, gdb_zip: str, pmtiles_url: str):
+        """Update metadata in compiler_datasets for historical year"""
+        try:
+            logger.info(f"Updating metadata for {theme} {year}...")
+            
+            conn = self._get_db_connection()
+            cursor = conn.cursor()
+            
+            # Calculate MD5 hash of GDB file
+            with open(gdb_zip, 'rb') as f:
+                md5_hash = hashlib.md5(f.read()).hexdigest()
+            
+            # Get file size
+            file_size = os.path.getsize(gdb_zip)
+            
+            # Construct URLs
+            gdb_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            shp_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            
+            gdb_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{gdb_minio_path}"
+            shp_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{shp_minio_path}"
+            
+            # Get row count from shapefile
+            try:
+                import tempfile
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    with zipfile.ZipFile(shp_zip, 'r') as zip_ref:
+                        zip_ref.extractall(temp_dir)
+                    
+                    shp_file = None
+                    for file in os.listdir(temp_dir):
+                        if file.endswith('.shp'):
+                            shp_file = os.path.join(temp_dir, file)
+                            break
+                    
+                    if shp_file:
+                        gdf = gpd.read_file(shp_file)
+                        row_count = len(gdf)
+                    else:
+                        row_count = 0
+            except Exception as e:
+                logger.warning(f"Could not get row count from shapefile: {e}")
+                row_count = 0
+            
+            # Update or insert metadata
+            title = f"Peta {'Eksisting' if theme == 'existing' else 'Potensi'} Mangrove {year}"
+            
+            # Check if record exists
+            cursor.execute("SELECT id FROM pmn.compiler_datasets WHERE title = %s", (title,))
+            existing_record = cursor.fetchone()
+            
+            if existing_record:
+                # Update existing record
+                cursor.execute("""
+                    UPDATE pmn.compiler_datasets 
+                    SET rows = %s, md5 = %s, date_created = %s, size = %s,
+                        gdb_url = %s, shp_url = %s, map_url = %s, process = %s
+                    WHERE title = %s
+                """, (
+                    row_count, md5_hash, datetime.now(), file_size,
+                    gdb_url, shp_url, pmtiles_url, False, title
+                ))
+                logger.info(f"✓ Updated metadata for {theme} {year}: {row_count} rows, {file_size} bytes")
+            else:
+                # Insert new record
+                cursor.execute("""
+                    INSERT INTO pmn.compiler_datasets 
+                    (title, rows, md5, date_created, size, gdb_url, shp_url, map_url, process)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    title, row_count, md5_hash, datetime.now(), file_size,
+                    gdb_url, shp_url, pmtiles_url, False
+                ))
+                logger.info(f"✓ Inserted metadata for {theme} {year}: {row_count} rows, {file_size} bytes")
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+        except Exception as e:
+            logger.error(f"Failed to update metadata for {theme} {year}: {e}")
+            logger.error(traceback.format_exc())
+            # Don't raise - metadata update failure shouldn't stop the process
 
     def process_historical_years(self):
         """Process historical years (2021 to current_year-1)"""
