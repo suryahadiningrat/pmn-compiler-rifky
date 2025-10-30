@@ -1616,16 +1616,33 @@ class PMNCompiler:
                     try:
                         logger.info(f"Trying tippecanoe-decode layer extraction for {theme}...")
                         
-                        # Try extracting with different layer name possibilities
-                        layer_names = [
-                            f"{theme.upper()}_{year}",  # EXISTING_2021
-                            f"{theme.lower()}_{year}",  # existing_2021
-                            theme.upper(),              # EXISTING
-                            theme.lower(),              # existing
-                            f"{theme}_{year}",          # existing_2021
-                            "layer0",                   # default layer name
-                            "data"                      # common layer name
-                        ]
+                        # Try extracting with correct layer names based on PMTiles structure analysis
+                        if theme.lower() == "existing":
+                            layer_names = [
+                                "MANGROVE_EKSISTING_IGT",   # Correct layer name from PMTiles analysis
+                                f"{theme.upper()}_{year}",  # EXISTING_2021 (backup)
+                                f"{theme.lower()}_{year}",  # existing_2021 (backup)
+                                theme.upper(),              # EXISTING (backup)
+                                "layer0"                    # default layer name (backup)
+                            ]
+                        elif theme.lower() == "potensi":
+                            layer_names = [
+                                "POTENSI_INDONESIA_16NOV2021",  # Correct layer name from PMTiles analysis
+                                f"{theme.upper()}_{year}",      # POTENSI_2021 (backup)
+                                f"{theme.lower()}_{year}",      # potensi_2021 (backup)
+                                theme.upper(),                  # POTENSI (backup)
+                                "layer0"                        # default layer name (backup)
+                            ]
+                        else:
+                            # Fallback for unknown themes
+                            layer_names = [
+                                f"{theme.upper()}_{year}",
+                                f"{theme.lower()}_{year}",
+                                theme.upper(),
+                                theme.lower(),
+                                "layer0",
+                                "data"
+                            ]
                         
                         result = None
                         successful_layer = None
