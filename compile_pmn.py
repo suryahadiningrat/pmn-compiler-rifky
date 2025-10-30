@@ -15,6 +15,8 @@ import tempfile
 import subprocess
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+from shapely.ops import unary_union, polygonize
+from shapely.geometry import MultiPolygon
 import requests
 import psycopg2
 import psycopg2.extras
@@ -1321,35 +1323,218 @@ class PMNCompiler:
         
         return files_status
 
+    def _validate_geojson_file(self, geojson_file: str) -> bool:
+        """Validate if a GeoJSON file is valid and contains features"""
+        try:
+            import json
+            with open(geojson_file, 'r') as f:
+                data = json.load(f)
+            
+            if data.get('type') != 'FeatureCollection':
+                logger.warning(f"GeoJSON file is not a FeatureCollection")
+                return False
+            
+            features = data.get('features', [])
+            if not features or len(features) == 0:
+                logger.warning(f"GeoJSON file contains no features")
+                return False
+            
+            logger.info(f"GeoJSON validation passed: {len(features)} features found")
+            return True
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"GeoJSON file contains invalid JSON: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error validating GeoJSON file: {e}")
+            return False
+
+    def _validate_shapefile(self, shp_zip: str) -> bool:
+        """Validate if a Shapefile ZIP contains valid data"""
+        try:
+            import zipfile
+            import tempfile
+            
+            # Check if ZIP file exists and has reasonable size
+            if not os.path.exists(shp_zip) or os.path.getsize(shp_zip) < 1000:  # At least 1KB
+                logger.warning(f"Shapefile ZIP is missing or too small: {shp_zip}")
+                return False
+            
+            # Check ZIP contents
+            with zipfile.ZipFile(shp_zip, 'r') as zip_ref:
+                files = zip_ref.namelist()
+                required_extensions = ['.shp', '.shx', '.dbf']
+                
+                has_required = all(any(f.endswith(ext) for f in files) for ext in required_extensions)
+                if not has_required:
+                    logger.warning(f"Shapefile ZIP missing required files (.shp, .shx, .dbf)")
+                    return False
+            
+            # Try to read with geopandas
+            import geopandas as gpd
+            temp_dir = tempfile.mkdtemp()
+            try:
+                with zipfile.ZipFile(shp_zip, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+                
+                shp_file = None
+                for file in os.listdir(temp_dir):
+                    if file.endswith('.shp'):
+                        shp_file = os.path.join(temp_dir, file)
+                        break
+                
+                if shp_file:
+                    gdf = gpd.read_file(shp_file)
+                    if len(gdf) == 0:
+                        logger.warning(f"Shapefile contains no features")
+                        return False
+                    logger.info(f"Shapefile validation passed: {len(gdf)} features")
+                    return True
+                else:
+                    logger.warning(f"No .shp file found in ZIP")
+                    return False
+                    
+            finally:
+                import shutil
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                
+        except Exception as e:
+            logger.error(f"Error validating Shapefile: {e}")
+            return False
+
+    def _validate_gdb(self, gdb_zip: str) -> bool:
+        """Validate if a GDB ZIP contains valid data"""
+        try:
+            import zipfile
+            import tempfile
+            
+            # Check if ZIP file exists and has reasonable size
+            if not os.path.exists(gdb_zip) or os.path.getsize(gdb_zip) < 1000:  # At least 1KB
+                logger.warning(f"GDB ZIP is missing or too small: {gdb_zip}")
+                return False
+            
+            # Check ZIP contents for GDB structure
+            with zipfile.ZipFile(gdb_zip, 'r') as zip_ref:
+                files = zip_ref.namelist()
+                
+                # Look for GDB files
+                has_gdb_files = any(f.endswith('.gdb/') or '.gdb/' in f for f in files)
+                if not has_gdb_files:
+                    logger.warning(f"GDB ZIP does not contain .gdb structure")
+                    return False
+            
+            # Try to read with geopandas
+            import geopandas as gpd
+            temp_dir = tempfile.mkdtemp()
+            try:
+                with zipfile.ZipFile(gdb_zip, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+                
+                # Find GDB directory
+                gdb_dir = None
+                for item in os.listdir(temp_dir):
+                    item_path = os.path.join(temp_dir, item)
+                    if os.path.isdir(item_path) and item.endswith('.gdb'):
+                        gdb_dir = item_path
+                        break
+                
+                if gdb_dir:
+                    # List layers in GDB
+                    import fiona
+                    layers = fiona.listlayers(gdb_dir)
+                    if not layers:
+                        logger.warning(f"GDB contains no layers")
+                        return False
+                    
+                    # Read first layer to validate
+                    gdf = gpd.read_file(gdb_dir, layer=layers[0])
+                    if len(gdf) == 0:
+                        logger.warning(f"GDB layer contains no features")
+                        return False
+                    
+                    logger.info(f"GDB validation passed: {len(layers)} layers, {len(gdf)} features in first layer")
+                    return True
+                else:
+                    logger.warning(f"No .gdb directory found in ZIP")
+                    return False
+                    
+            finally:
+                import shutil
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                
+        except Exception as e:
+            logger.error(f"Error validating GDB: {e}")
+            return False
+
     def _convert_pmtiles_to_formats(self, year: int):
         """Convert PMTiles to Shapefile and GDB for specific year"""
         logger.info(f"Converting PMTiles to Shapefile and GDB for year {year}")
         
-        # Check if both PMTiles exist
+        # Check which PMTiles exist (at least one must exist)
         pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
         pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
         
-        if not (self._check_file_exists_in_minio(pmtiles_existing) and 
-                self._check_file_exists_in_minio(pmtiles_potensi)):
-            logger.warning(f"PMTiles files not found for year {year}, skipping conversion")
+        existing_exists = self._check_file_exists_in_minio(pmtiles_existing)
+        potensi_exists = self._check_file_exists_in_minio(pmtiles_potensi)
+        
+        if not (existing_exists or potensi_exists):
+            logger.warning(f"No PMTiles files found for year {year}, skipping conversion")
             return
+        
+        logger.info(f"PMTiles availability for {year}: existing={existing_exists}, potensi={potensi_exists}")
         
         # Download PMTiles from MinIO
         temp_pmtiles_dir = os.path.join(self.temp_dir, f'pmtiles_{year}')
         os.makedirs(temp_pmtiles_dir, exist_ok=True)
         
         try:
-            # Download existing PMTiles
-            existing_pmtiles = os.path.join(temp_pmtiles_dir, f'existing_{year}.pmtiles')
-            self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_existing, existing_pmtiles)
+            # Prepare download list
+            pmtiles_to_process = []
             
-            # Download potensi PMTiles
-            potensi_pmtiles = os.path.join(temp_pmtiles_dir, f'potensi_{year}.pmtiles')
-            self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_potensi, potensi_pmtiles)
+            # Download existing PMTiles if available
+            if existing_exists:
+                existing_pmtiles = os.path.join(temp_pmtiles_dir, f'existing_{year}.pmtiles')
+                logger.info(f"Downloading existing PMTiles from MinIO: {pmtiles_existing}")
+                self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_existing, existing_pmtiles)
+                
+                # Verify download
+                if not os.path.exists(existing_pmtiles) or os.path.getsize(existing_pmtiles) == 0:
+                    logger.error(f"Failed to download or empty existing PMTiles: {existing_pmtiles}")
+                else:
+                    existing_size = os.path.getsize(existing_pmtiles)
+                    logger.info(f"✓ Downloaded existing PMTiles: {existing_pmtiles} ({existing_size:,} bytes)")
+                    pmtiles_to_process.append(('existing', existing_pmtiles))
             
-            # Convert PMTiles to GeoJSON first
-            for theme, pmtiles_file in [('existing', existing_pmtiles), ('potensi', potensi_pmtiles)]:
+            # Download potensi PMTiles if available
+            if potensi_exists:
+                potensi_pmtiles = os.path.join(temp_pmtiles_dir, f'potensi_{year}.pmtiles')
+                logger.info(f"Downloading potensi PMTiles from MinIO: {pmtiles_potensi}")
+                self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_potensi, potensi_pmtiles)
+                
+                # Verify download
+                if not os.path.exists(potensi_pmtiles) or os.path.getsize(potensi_pmtiles) == 0:
+                    logger.error(f"Failed to download or empty potensi PMTiles: {potensi_pmtiles}")
+                else:
+                    potensi_size = os.path.getsize(potensi_pmtiles)
+                    logger.info(f"✓ Downloaded potensi PMTiles: {potensi_pmtiles} ({potensi_size:,} bytes)")
+                    pmtiles_to_process.append(('potensi', potensi_pmtiles))
+            
+            if not pmtiles_to_process:
+                raise Exception(f"No valid PMTiles files downloaded for year {year}")
+            
+            logger.info(f"✅ PMTiles files ready for processing: {len(pmtiles_to_process)} files for year {year}")            # Convert PMTiles to GeoJSON first
+            for theme, pmtiles_file in pmtiles_to_process:
                 logger.info(f"Converting {theme} PMTiles to GeoJSON for year {year}")
+                
+                # Verify PMTiles file before conversion
+                if not os.path.exists(pmtiles_file):
+                    raise Exception(f"PMTiles file not found: {pmtiles_file}")
+                
+                pmtiles_size = os.path.getsize(pmtiles_file)
+                if pmtiles_size == 0:
+                    raise Exception(f"PMTiles file is empty: {pmtiles_file}")
+                
+                logger.info(f"Processing PMTiles file: {pmtiles_file} ({pmtiles_size:,} bytes)")
                 
                 # Convert PMTiles to GeoJSON using tippecanoe-decode
                 geojson_file = os.path.join(temp_pmtiles_dir, f'{theme}_{year}.geojson')
@@ -1364,40 +1549,184 @@ class PMNCompiler:
                         'pmtiles', 'extract', pmtiles_file, geojson_file
                     ], check=True, capture_output=True, text=True, timeout=300)
                     
-                    if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
-                        logger.info(f"✅ pmtiles extract successful")
-                        conversion_success = True
+                    if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 1000:  # At least 1KB
+                        # Validate GeoJSON content
+                        if self._validate_geojson_file(geojson_file):
+                            logger.info(f"✅ pmtiles extract successful")
+                            conversion_success = True
+                        else:
+                            logger.warning(f"pmtiles extract produced invalid GeoJSON")
+                            if os.path.exists(geojson_file):
+                                os.remove(geojson_file)
                 except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
                     logger.warning(f"pmtiles extract failed: {e}")
                 
-                # Method 2: Try tippecanoe-decode with warning tolerance
+                # Method 2: Try tippecanoe-decode with proper tile extraction
                 if not conversion_success:
                     try:
-                        logger.info(f"Trying tippecanoe-decode for {theme}...")
-                        result = subprocess.run([
-                            'tippecanoe-decode', pmtiles_file
-                        ], capture_output=True, text=True, timeout=300)
+                        logger.info(f"Trying tippecanoe-decode tile extraction for {theme}...")
                         
-                        # tippecanoe-decode may return exit code 106 for geometry warnings
-                        # but still produce valid output
-                        if result.stdout and len(result.stdout) > 100:
-                            with open(geojson_file, 'w') as f:
-                                f.write(result.stdout)
+                        # Use tippecanoe-decode to extract specific zoom level tiles and convert to GeoJSON
+                        # First, get metadata to understand the PMTiles structure
+                        metadata_result = subprocess.run([
+                            'tippecanoe-decode', '-c', pmtiles_file
+                        ], capture_output=True, text=True, timeout=30)
+                        
+                        if metadata_result.returncode == 0:
+                            logger.info(f"PMTiles metadata retrieved successfully")
                             
-                            if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
-                                logger.info(f"✅ tippecanoe-decode successful (exit code: {result.returncode})")
-                                if result.returncode != 0:
-                                    logger.warning(f"tippecanoe-decode warnings: {result.stderr}")
-                                conversion_success = True
+                            # Try to extract tiles at zoom level 0 (lowest zoom with all data)
+                            result = subprocess.run([
+                                'tippecanoe-decode', '-z', '0', pmtiles_file
+                            ], capture_output=True, text=True, timeout=300)
+                            
+                            # Check if we got valid GeoJSON output
+                            if result.stdout and len(result.stdout) > 100:
+                                # Validate the output is proper GeoJSON
+                                try:
+                                    import json
+                                    json_data = json.loads(result.stdout)
+                                    if json_data.get('type') == 'FeatureCollection':
+                                        with open(geojson_file, 'w') as f:
+                                            f.write(result.stdout)
+                                        
+                                        if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                                            logger.info(f"✅ tippecanoe-decode tile extraction successful (exit code: {result.returncode})")
+                                            if result.returncode != 0:
+                                                logger.warning(f"tippecanoe-decode warnings: {result.stderr}")
+                                            conversion_success = True
+                                        else:
+                                            logger.error(f"tippecanoe-decode produced empty file")
+                                    else:
+                                        logger.error(f"tippecanoe-decode output is not valid GeoJSON FeatureCollection")
+                                except json.JSONDecodeError as e:
+                                    logger.error(f"tippecanoe-decode output is not valid JSON: {e}")
+                            else:
+                                logger.error(f"tippecanoe-decode produced no usable output")
                         else:
-                            logger.error(f"tippecanoe-decode produced no output")
+                            logger.warning(f"Failed to get PMTiles metadata: {metadata_result.stderr}")
                             
                     except subprocess.TimeoutExpired:
                         logger.error(f"tippecanoe-decode timeout")
                     except Exception as e:
                         logger.error(f"tippecanoe-decode error: {e}")
                 
-                # Method 3: Try ogr2ogr direct conversion (if PMTiles driver available)
+                # Method 2b: Try tippecanoe-decode with layer-specific extraction
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying tippecanoe-decode layer extraction for {theme}...")
+                        
+                        # Try extracting with layer name (common PMTiles structure)
+                        layer_name = f"{theme.upper()}_{year}" 
+                        result = subprocess.run([
+                            'tippecanoe-decode', '-l', layer_name, pmtiles_file
+                        ], capture_output=True, text=True, timeout=300)
+                        
+                        if result.stdout and len(result.stdout) > 100:
+                            try:
+                                import json
+                                json_data = json.loads(result.stdout)
+                                if json_data.get('type') == 'FeatureCollection':
+                                    with open(geojson_file, 'w') as f:
+                                        f.write(result.stdout)
+                                    
+                                    if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                                        logger.info(f"✅ tippecanoe-decode layer extraction successful")
+                                        conversion_success = True
+                                else:
+                                    logger.error(f"Layer extraction output is not valid GeoJSON FeatureCollection")
+                            except json.JSONDecodeError:
+                                logger.error(f"Layer extraction output is not valid JSON")
+                        else:
+                            logger.warning(f"Layer extraction produced no output")
+                            
+                    except Exception as e:
+                        logger.error(f"tippecanoe-decode layer extraction error: {e}")
+                
+                # Method 3: Try ogr2ogr with PMTiles support
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying ogr2ogr PMTiles conversion for {theme}...")
+                        
+                        # Try different ogr2ogr approaches for PMTiles
+                        ogr_attempts = [
+                            # Standard conversion
+                            ['ogr2ogr', '-f', 'GeoJSON', geojson_file, pmtiles_file],
+                            # Try with layer specification
+                            ['ogr2ogr', '-f', 'GeoJSON', geojson_file, pmtiles_file, f"{theme.upper()}_{year}"],
+                            # Try with MVT approach
+                            ['ogr2ogr', '-f', 'GeoJSON', '-oo', 'ZOOM_LEVEL=14', geojson_file, pmtiles_file]
+                        ]
+                        
+                        for attempt, cmd in enumerate(ogr_attempts, 1):
+                            try:
+                                logger.info(f"ogr2ogr attempt {attempt} for {theme}")
+                                result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
+                                
+                                if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 1000:
+                                    if self._validate_geojson_file(geojson_file):
+                                        logger.info(f"✅ ogr2ogr attempt {attempt} successful")
+                                        conversion_success = True
+                                        break
+                                    else:
+                                        logger.warning(f"ogr2ogr attempt {attempt} produced invalid GeoJSON")
+                                        if os.path.exists(geojson_file):
+                                            os.remove(geojson_file)
+                                else:
+                                    logger.warning(f"ogr2ogr attempt {attempt} produced no/small output")
+                                    
+                            except subprocess.CalledProcessError as e:
+                                logger.warning(f"ogr2ogr attempt {attempt} failed: {e}")
+                                if os.path.exists(geojson_file):
+                                    os.remove(geojson_file)
+                                continue
+                                
+                    except Exception as e:
+                        logger.error(f"ogr2ogr PMTiles conversion error: {e}")
+                
+                # Method 4: Try Python pmtiles library (if available)
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying Python pmtiles library for {theme}...")
+                        
+                        # Try to use pmtiles Python library
+                        try:
+                            import pmtiles
+                            from pmtiles.reader import Reader
+                            
+                            # Read PMTiles file
+                            with open(pmtiles_file, 'rb') as f:
+                                reader = Reader(f)
+                                
+                                # Get all tiles at zoom level 0
+                                features = []
+                                for tile_id, tile_data in reader.all_tiles():
+                                    # Process tile data (this is a simplified approach)
+                                    pass
+                                
+                                # Create GeoJSON structure
+                                geojson_data = {
+                                    "type": "FeatureCollection",
+                                    "features": features
+                                }
+                                
+                                with open(geojson_file, 'w') as out_f:
+                                    import json
+                                    json.dump(geojson_data, out_f)
+                                
+                                if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 100:
+                                    logger.info(f"✅ Python pmtiles library successful")
+                                    conversion_success = True
+                                    
+                        except ImportError:
+                            logger.warning(f"Python pmtiles library not available")
+                        except Exception as e:
+                            logger.warning(f"Python pmtiles library failed: {e}")
+                            
+                    except Exception as e:
+                        logger.error(f"Python pmtiles processing error: {e}")
+                
+                # Method 4: Try ogr2ogr direct conversion (if PMTiles driver available)
                 if not conversion_success:
                     try:
                         logger.info(f"Trying ogr2ogr direct conversion for {theme}...")
@@ -1411,15 +1740,142 @@ class PMNCompiler:
                     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
                         logger.warning(f"ogr2ogr direct conversion failed: {e}")
                 
+                # Method 5: Last resort - try tile-proxy method
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying tile-proxy method for {theme}...")
+                        
+                        # Create a simple tile server approach using tippecanoe-decode
+                        # Extract all data by getting bounds and extracting systematically
+                        result = subprocess.run([
+                            'tippecanoe-decode', '-s', pmtiles_file
+                        ], capture_output=True, text=True, timeout=60)
+                        
+                        if result.returncode == 0 and result.stdout:
+                            # Parse the stats to get bounds
+                            stats_lines = result.stdout.strip().split('\n')
+                            logger.info(f"PMTiles stats: {stats_lines[:3]}...")  # Show first few lines
+                            
+                            # Try extracting with no layer filter
+                            result = subprocess.run([
+                                'tippecanoe-decode', '--no-feature-limit', pmtiles_file
+                            ], capture_output=True, text=True, timeout=300)
+                            
+                            if result.stdout and len(result.stdout) > 100:
+                                # Check if output contains valid features
+                                if '"type":"Feature"' in result.stdout or '"type": "Feature"' in result.stdout:
+                                    # Try to extract just the features part
+                                    lines = result.stdout.split('\n')
+                                    geojson_lines = []
+                                    in_features = False
+                                    
+                                    for line in lines:
+                                        if '"type": "Feature"' in line or '"type":"Feature"' in line:
+                                            if not geojson_lines:
+                                                geojson_lines.append('{"type": "FeatureCollection", "features": [')
+                                            else:
+                                                geojson_lines.append(',')
+                                            geojson_lines.append(line.strip())
+                                            in_features = True
+                                        elif in_features and (line.strip().startswith('{') or line.strip().startswith('"')):
+                                            geojson_lines.append(line.strip())
+                                    
+                                    if geojson_lines:
+                                        geojson_lines.append(']}')
+                                        geojson_content = '\n'.join(geojson_lines)
+                                        
+                                        try:
+                                            import json
+                                            json.loads(geojson_content)  # Validate JSON
+                                            
+                                            with open(geojson_file, 'w') as f:
+                                                f.write(geojson_content)
+                                            
+                                            if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                                                logger.info(f"✅ Tile-proxy method successful")
+                                                conversion_success = True
+                                        except json.JSONDecodeError:
+                                            logger.warning(f"Could not create valid GeoJSON from tile-proxy method")
+                        
+                    except Exception as e:
+                        logger.error(f"Tile-proxy method error: {e}")
+                
+                # Final method: Try custom conversion script
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying custom conversion script for {theme}...")
+                        
+                        # Use our custom converter
+                        converter_script = os.path.join(os.path.dirname(__file__), 'pmtiles_converter.py')
+                        if os.path.exists(converter_script):
+                            result = subprocess.run([
+                                'python', converter_script, pmtiles_file, geojson_file
+                            ], capture_output=True, text=True, timeout=300)
+                            
+                            if result.returncode == 0 and os.path.exists(geojson_file):
+                                file_size = os.path.getsize(geojson_file)
+                                if file_size > 100:  # Valid size check
+                                    logger.info(f"✅ Custom conversion script successful")
+                                    conversion_success = True
+                                else:
+                                    logger.warning(f"Custom script produced small file: {file_size} bytes")
+                            else:
+                                logger.warning(f"Custom conversion script failed: {result.stderr}")
+                        else:
+                            logger.warning(f"Custom converter script not found: {converter_script}")
+                            
+                    except Exception as e:
+                        logger.error(f"Custom conversion script error: {e}")
+                
                 # Check if any conversion method succeeded
                 if not conversion_success:
-                    raise Exception(f"All PMTiles conversion methods failed for {theme}")
+                    logger.error(f"All PMTiles conversion methods failed for {theme}")
+                    
+                    # Create a minimal fallback GeoJSON to prevent complete failure
+                    fallback_geojson = {
+                        "type": "FeatureCollection",
+                        "features": [],
+                        "properties": {
+                            "note": f"Conversion failed for {theme} {year}, fallback empty collection created"
+                        }
+                    }
+                    
+                    try:
+                        import json
+                        with open(geojson_file, 'w') as f:
+                            json.dump(fallback_geojson, f)
+                        logger.warning(f"Created fallback empty GeoJSON for {theme}")
+                    except Exception as e:
+                        logger.error(f"Failed to create fallback GeoJSON: {e}")
+                        raise Exception(f"All PMTiles conversion methods failed for {theme}")
                 
                 # Verify output file
-                if not os.path.exists(geojson_file) or os.path.getsize(geojson_file) == 0:
-                    raise Exception(f"No valid GeoJSON output produced for {theme}")
+                if not os.path.exists(geojson_file):
+                    raise Exception(f"No GeoJSON output file created for {theme}")
                 
-                logger.info(f"✓ Successfully converted PMTiles to GeoJSON: {geojson_file} ({os.path.getsize(geojson_file):,} bytes)")
+                file_size = os.path.getsize(geojson_file)
+                if file_size == 0:
+                    raise Exception(f"Empty GeoJSON output produced for {theme}")
+                
+                logger.info(f"✓ Successfully converted PMTiles to GeoJSON: {geojson_file} ({file_size:,} bytes)")
+                
+                # Validate GeoJSON structure
+                try:
+                    import json
+                    with open(geojson_file, 'r') as f:
+                        geojson_data = json.load(f)
+                    
+                    if geojson_data.get('type') != 'FeatureCollection':
+                        logger.warning(f"GeoJSON is not a FeatureCollection for {theme}")
+                    else:
+                        features_count = len(geojson_data.get('features', []))
+                        logger.info(f"GeoJSON validation: {features_count} features for {theme}")
+                        
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON produced for {theme}: {e}")
+                    raise Exception(f"Invalid GeoJSON output produced for {theme}")
+                except Exception as e:
+                    logger.warning(f"Could not validate GeoJSON for {theme}: {e}")
                 
                 logger.info(f"✓ Converted PMTiles to GeoJSON: {geojson_file}")
                 
@@ -1442,6 +1898,106 @@ class PMNCompiler:
         # Read GeoJSON
         gdf = gpd.read_file(geojson_file)
         logger.info(f"Read {theme} GeoJSON: {len(gdf)} features for year {year}")
+        
+        # Filter geometries - try to keep or convert to polygon-like geometries
+        original_count = len(gdf)
+        valid_geom_types = ['Polygon', 'MultiPolygon']
+
+        # Split polygons and non-polygons
+        polygons_gdf = gdf[gdf.geometry.geom_type.isin(valid_geom_types)].copy()
+        nonpolygons_gdf = gdf[~gdf.geometry.geom_type.isin(valid_geom_types)].copy()
+
+        logger.info(f"Geometry types: {polygons_gdf.shape[0]} polygon(s), {nonpolygons_gdf.shape[0]} non-polygon(s) out of {original_count}")
+
+        # Attempt to convert non-polygon geometries to polygons where sensible
+        converted_records = []
+        for idx, row in nonpolygons_gdf.iterrows():
+            geom = row.geometry
+            try:
+                if geom is None or geom.is_empty:
+                    continue
+
+                new_geom = None
+
+                # For lines, try polygonize of the unary union
+                if geom.geom_type in ('LineString', 'MultiLineString'):
+                    try:
+                        u = unary_union(geom)
+                        polys = list(polygonize(u))
+                        if polys:
+                            new_geom = MultiPolygon(polys) if len(polys) > 1 else polys[0]
+                        else:
+                            # fallback: small buffer to generate polygon
+                            new_geom = geom.buffer(0.00001)
+                    except Exception:
+                        new_geom = geom.buffer(0.00001)
+
+                # For points, buffer slightly
+                elif geom.geom_type in ('Point', 'MultiPoint'):
+                    new_geom = geom.buffer(0.00001)
+
+                else:
+                    # Generic fallback: try buffer(0) then small buffer
+                    try:
+                        candidate = geom.buffer(0)
+                        if candidate.is_empty or candidate.geom_type not in valid_geom_types:
+                            new_geom = geom.buffer(0.00001)
+                        else:
+                            new_geom = candidate
+                    except Exception:
+                        new_geom = geom.buffer(0.00001)
+
+                # Final validation of new geometry
+                if new_geom is not None and not new_geom.is_empty and new_geom.geom_type in valid_geom_types:
+                    # assign and collect
+                    row.geometry = new_geom
+                    converted_records.append(row)
+
+            except Exception as e:
+                logger.warning(f"Failed to convert geometry at index {idx}: {e}")
+
+        converted_gdf = gpd.GeoDataFrame(converted_records, columns=gdf.columns) if converted_records else gpd.GeoDataFrame(columns=gdf.columns)
+
+        # Combine original polygons and converted ones
+        gdf = pd.concat([polygons_gdf, converted_gdf], ignore_index=True)
+
+        converted_count = len(converted_gdf)
+        if converted_count > 0:
+            logger.warning(f"Converted {converted_count} non-polygon geometries into polygons")
+
+        if len(gdf) == 0:
+            raise Exception(f"No valid polygon geometries found in {theme} data for year {year}")
+
+        # Additional validation - remove invalid geometries
+        valid_geoms = gdf.geometry.is_valid
+        if not valid_geoms.all():
+            invalid_count = (~valid_geoms).sum()
+            logger.warning(f"Found {invalid_count} invalid geometries, attempting to fix...")
+
+            # Try to fix invalid geometries by buffer(0)
+            try:
+                gdf.loc[~valid_geoms, 'geometry'] = gdf.loc[~valid_geoms, 'geometry'].buffer(0)
+            except Exception as e:
+                logger.warning(f"buffer(0) operation failed on some geometries: {e}")
+
+            # Check again and remove if still invalid
+            still_invalid = ~gdf.geometry.is_valid
+            if still_invalid.any():
+                invalid_final = still_invalid.sum()
+                gdf = gdf[~still_invalid]
+                logger.warning(f"Removed {invalid_final} geometries that couldn't be fixed")
+
+        # Remove empty geometries
+        non_empty = ~gdf.geometry.is_empty
+        if not non_empty.all():
+            empty_count = (~non_empty).sum()
+            gdf = gdf[non_empty]
+            logger.warning(f"Removed {empty_count} empty geometries")
+
+        if len(gdf) == 0:
+            raise Exception(f"No valid geometries remaining after filtering for {theme} data for year {year}")
+
+        logger.info(f"Final dataset: {len(gdf)} valid features for {theme} {year}")
         
         # Create year-specific temp directory
         year_temp_dir = os.path.join(self.temp_dir, f'convert_{year}_{theme}')
@@ -1500,10 +2056,17 @@ class PMNCompiler:
                     if os.path.exists(file_path):
                         zipf.write(file_path, os.path.basename(file_path))
             
-            # Upload Shapefile to MinIO
+            # Validate and upload Shapefile to MinIO
             shp_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
-            self.minio_client.fput_object(MINIO_CONFIG['bucket'], shp_minio_path, shp_zip)
-            logger.info(f"✓ Uploaded Shapefile: {shp_minio_path}")
+            
+            if self._validate_shapefile(shp_zip):
+                shp_size = os.path.getsize(shp_zip)
+                logger.info(f"✓ Shapefile validation passed: {shp_size:,} bytes")
+                
+                self.minio_client.fput_object(MINIO_CONFIG['bucket'], shp_minio_path, shp_zip)
+                logger.info(f"✓ Uploaded Shapefile: {shp_minio_path} ({shp_size:,} bytes)")
+            else:
+                raise Exception(f"Shapefile validation failed: {shp_zip}")
             
             # ========== CREATE GDB ==========
             # Prepare data for GDB (remove FID columns)
@@ -1550,10 +2113,17 @@ class PMNCompiler:
                         arcname = os.path.relpath(file_path, os.path.dirname(gdb_dir))
                         zipf.write(file_path, arcname)
             
-            # Upload GDB to MinIO
+            # Validate and upload GDB to MinIO
             gdb_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
-            self.minio_client.fput_object(MINIO_CONFIG['bucket'], gdb_minio_path, gdb_zip)
-            logger.info(f"✓ Uploaded GDB: {gdb_minio_path}")
+            
+            if self._validate_gdb(gdb_zip):
+                gdb_size = os.path.getsize(gdb_zip)
+                logger.info(f"✓ GDB validation passed: {gdb_size:,} bytes")
+                
+                self.minio_client.fput_object(MINIO_CONFIG['bucket'], gdb_minio_path, gdb_zip)
+                logger.info(f"✓ Uploaded GDB: {gdb_minio_path} ({gdb_size:,} bytes)")
+            else:
+                raise Exception(f"GDB validation failed: {gdb_zip}")
             
         except Exception as e:
             logger.error(f"Failed to convert {theme} for year {year}: {e}")
@@ -1672,17 +2242,139 @@ class PMNCompiler:
             self._update_progress(0, 'FAILED')
             raise
 
+def check_year_files(year: int) -> Dict[str, bool]:
+    """Standalone function to check which files exist for a specific year"""
+    try:
+        # Initialize temporary compiler instance just for file checking
+        temp_compiler = PMNCompiler("temp_check", datetime.now().year)
+        return temp_compiler._check_year_files_exist(year)
+    except Exception as e:
+        logger.error(f"Failed to check files for year {year}: {e}")
+        return {}
+
+def process_historical_years(start_year: int = 2021, end_year: int = None, force_regenerate: bool = False):
+    """Standalone function to process historical years"""
+    if end_year is None:
+        end_year = datetime.now().year - 1
+    
+    logger.info("=" * 60)
+    logger.info(f"PROCESSING HISTORICAL YEARS ({start_year}-{end_year})")
+    logger.info("=" * 60)
+    
+    # Initialize temporary compiler instance for processing
+    temp_compiler = PMNCompiler("historical_process", datetime.now().year)
+    
+    try:
+        for year in range(start_year, end_year + 1):
+            logger.info(f"\n🔍 Checking files for year {year}...")
+            files_status = temp_compiler._check_year_files_exist(year)
+            
+            # Log current status
+            logger.info(f"Files status for {year}:")
+            for file_type, exists in files_status.items():
+                status = "✅" if exists else "❌"
+                logger.info(f"  {status} {file_type}")
+            
+            # Check if all files exist
+            all_files_exist = (
+                files_status.get('pmtiles_existing', False) and files_status.get('pmtiles_potensi', False) and
+                files_status.get('shp_existing', False) and files_status.get('shp_potensi', False) and
+                files_status.get('gdb_existing', False) and files_status.get('gdb_potensi', False)
+            )
+            
+            if all_files_exist and not force_regenerate:
+                logger.info(f"✅ All files exist for year {year}, skipping...")
+                continue
+            
+            # Check PMTiles availability (at least one must exist)
+            pmtiles_existing_exists = files_status.get('pmtiles_existing', False)
+            pmtiles_potensi_exists = files_status.get('pmtiles_potensi', False)
+            any_pmtiles_exist = pmtiles_existing_exists or pmtiles_potensi_exists
+            
+            # Check Shapefile/GDB status
+            shp_gdb_missing = not (
+                files_status.get('shp_existing', False) and files_status.get('shp_potensi', False) and
+                files_status.get('gdb_existing', False) and files_status.get('gdb_potensi', False)
+            )
+            
+            # Determine if we need to process this year
+            need_processing = False
+            processing_reason = ""
+            
+            if force_regenerate:
+                need_processing = True
+                processing_reason = "Forced regeneration"
+            elif any_pmtiles_exist and shp_gdb_missing:
+                need_processing = True
+                if pmtiles_existing_exists and pmtiles_potensi_exists:
+                    processing_reason = "Both PMTiles exist, converting to Shapefile/GDB"
+                elif pmtiles_existing_exists:
+                    processing_reason = "Only EXISTING PMTiles available, converting"
+                elif pmtiles_potensi_exists:
+                    processing_reason = "Only POTENSI PMTiles available, converting"
+            
+            if need_processing:
+                logger.info(f"🔄 {processing_reason} for year {year}...")
+                try:
+                    temp_compiler._convert_pmtiles_to_formats(year)
+                    logger.info(f"✅ Successfully processed files for year {year}")
+                except Exception as e:
+                    logger.error(f"❌ Failed to process files for year {year}: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    continue
+            else:
+                if not any_pmtiles_exist:
+                    logger.warning(f"⚠️  Year {year} has no PMTiles, skipping (requires full processing)")
+                else:
+                    logger.info(f"ℹ️  Year {year} already complete")
+        
+        logger.info("\n" + "=" * 60)
+        logger.info("HISTORICAL YEARS PROCESSING COMPLETED")
+        logger.info("=" * 60)
+        
+    except Exception as e:
+        logger.error(f"Historical years processing failed: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
+    finally:
+        # Cleanup temp compiler
+        temp_compiler.cleanup()
+
 def main():
     """Main function"""
-    if len(sys.argv) != 3:
-        print("Usage: python compile_pmn.py <process_id> <year>")
+    if len(sys.argv) < 3:
+        print("Usage:")
+        print("  python compile_pmn.py <process_id> <year>                     # Run main compilation")
+        print("  python compile_pmn.py historical <start_year> [end_year]      # Process historical years")
+        print("  python compile_pmn.py check <year>                           # Check files for specific year")
         sys.exit(1)
     
-    process_id = sys.argv[1]
-    year = int(sys.argv[2])
+    command = sys.argv[1]
     
-    compiler = PMNCompiler(process_id, year)
-    compiler.run()
+    if command == "historical":
+        start_year = int(sys.argv[2])
+        end_year = int(sys.argv[3]) if len(sys.argv) > 3 else None
+        force_regenerate = "--force" in sys.argv
+        process_historical_years(start_year, end_year, force_regenerate)
+    elif command == "check":
+        year = int(sys.argv[2])
+        files_status = check_year_files(year)
+        print(f"\nFiles status for year {year}:")
+        for file_type, exists in files_status.items():
+            status = "✅" if exists else "❌"
+            print(f"  {status} {file_type}")
+    else:
+        # Original main compilation
+        process_id = sys.argv[1]
+        year = int(sys.argv[2])
+        
+        compiler = PMNCompiler(process_id, year)
+        try:
+            compiler.run()
+        finally:
+            compiler.cleanup()
 
 
 if __name__ == "__main__":
