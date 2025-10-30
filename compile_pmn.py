@@ -1899,13 +1899,37 @@ class PMNCompiler:
         gdf = gpd.read_file(geojson_file)
         logger.info(f"Read {theme} GeoJSON: {len(gdf)} features for year {year}")
         
+        # Debug: Check overall geometry state
+        total_null = gdf.geometry.isna().sum()
+        total_empty = gdf.geometry.is_empty.sum() if total_null < len(gdf) else 0
+        logger.info(f"Geometry overview: {len(gdf)} total, {total_null} null, {total_empty} empty")
+        
+        # If all geometries are null/empty, this is a fundamental data issue
+        if total_null + total_empty == len(gdf):
+            logger.error(f"All geometries in {theme} data are null or empty - GeoJSON conversion failed")
+            raise Exception(f"All geometries in {theme} data are null or empty")
+        
         # Filter geometries - try to keep or convert to polygon-like geometries
         original_count = len(gdf)
         valid_geom_types = ['Polygon', 'MultiPolygon']
 
-        # Split polygons and non-polygons
-        polygons_gdf = gdf[gdf.geometry.geom_type.isin(valid_geom_types)].copy()
-        nonpolygons_gdf = gdf[~gdf.geometry.geom_type.isin(valid_geom_types)].copy()
+        # Get actual geometry types for debugging
+        try:
+            actual_types = gdf[gdf.geometry.notna() & (~gdf.geometry.is_empty)].geometry.geom_type.value_counts()
+            logger.info(f"Actual geometry types in data: {dict(actual_types)}")
+        except Exception as e:
+            logger.warning(f"Failed to get geometry types: {e}")
+
+        # Split polygons and non-polygons (only from valid geometries)
+        valid_mask = gdf.geometry.notna() & (~gdf.geometry.is_empty)
+        valid_gdf = gdf[valid_mask].copy()
+        
+        if len(valid_gdf) == 0:
+            logger.error(f"No valid (non-null, non-empty) geometries found in {theme} data")
+            raise Exception(f"No valid geometries found in {theme} data for year {year}")
+            
+        polygons_gdf = valid_gdf[valid_gdf.geometry.geom_type.isin(valid_geom_types)].copy()
+        nonpolygons_gdf = valid_gdf[~valid_gdf.geometry.geom_type.isin(valid_geom_types)].copy()
 
         logger.info(f"Geometry types: {polygons_gdf.shape[0]} polygon(s), {nonpolygons_gdf.shape[0]} non-polygon(s) out of {original_count}")
         
@@ -1926,7 +1950,10 @@ class PMNCompiler:
             for i in range(sample_size):
                 geom = nonpolygons_gdf.iloc[i].geometry
                 if geom is not None:
-                    logger.debug(f"Sample geometry {i}: type={geom.geom_type}, is_empty={geom.is_empty}, coords_available={hasattr(geom, 'coords')}")
+                    try:
+                        logger.debug(f"Sample geometry {i}: type={geom.geom_type}, is_empty={geom.is_empty}, bounds={geom.bounds}")
+                    except Exception as e:
+                        logger.debug(f"Sample geometry {i}: error accessing properties - {e}")
                 else:
                     logger.debug(f"Sample geometry {i}: None")
 
