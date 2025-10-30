@@ -1354,19 +1354,72 @@ class PMNCompiler:
                 # Convert PMTiles to GeoJSON using tippecanoe-decode
                 geojson_file = os.path.join(temp_pmtiles_dir, f'{theme}_{year}.geojson')
                 
-                # Use tippecanoe-decode or pmtiles extract
+                # Use multiple methods to convert PMTiles to GeoJSON
+                conversion_success = False
+                
+                # Method 1: Try pmtiles extract first (if available)
                 try:
-                    # Try pmtiles extract first (if available)
+                    logger.info(f"Trying pmtiles extract for {theme}...")
                     result = subprocess.run([
                         'pmtiles', 'extract', pmtiles_file, geojson_file
-                    ], check=True, capture_output=True, text=True)
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    # Fallback to tippecanoe-decode
-                    result = subprocess.run([
-                        'tippecanoe-decode', pmtiles_file
-                    ], check=True, capture_output=True, text=True)
-                    with open(geojson_file, 'w') as f:
-                        f.write(result.stdout)
+                    ], check=True, capture_output=True, text=True, timeout=300)
+                    
+                    if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                        logger.info(f"✅ pmtiles extract successful")
+                        conversion_success = True
+                except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
+                    logger.warning(f"pmtiles extract failed: {e}")
+                
+                # Method 2: Try tippecanoe-decode with warning tolerance
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying tippecanoe-decode for {theme}...")
+                        result = subprocess.run([
+                            'tippecanoe-decode', pmtiles_file
+                        ], capture_output=True, text=True, timeout=300)
+                        
+                        # tippecanoe-decode may return exit code 106 for geometry warnings
+                        # but still produce valid output
+                        if result.stdout and len(result.stdout) > 100:
+                            with open(geojson_file, 'w') as f:
+                                f.write(result.stdout)
+                            
+                            if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                                logger.info(f"✅ tippecanoe-decode successful (exit code: {result.returncode})")
+                                if result.returncode != 0:
+                                    logger.warning(f"tippecanoe-decode warnings: {result.stderr}")
+                                conversion_success = True
+                        else:
+                            logger.error(f"tippecanoe-decode produced no output")
+                            
+                    except subprocess.TimeoutExpired:
+                        logger.error(f"tippecanoe-decode timeout")
+                    except Exception as e:
+                        logger.error(f"tippecanoe-decode error: {e}")
+                
+                # Method 3: Try ogr2ogr direct conversion (if PMTiles driver available)
+                if not conversion_success:
+                    try:
+                        logger.info(f"Trying ogr2ogr direct conversion for {theme}...")
+                        result = subprocess.run([
+                            'ogr2ogr', '-f', 'GeoJSON', geojson_file, pmtiles_file
+                        ], check=True, capture_output=True, text=True, timeout=300)
+                        
+                        if os.path.exists(geojson_file) and os.path.getsize(geojson_file) > 0:
+                            logger.info(f"✅ ogr2ogr direct conversion successful")
+                            conversion_success = True
+                    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+                        logger.warning(f"ogr2ogr direct conversion failed: {e}")
+                
+                # Check if any conversion method succeeded
+                if not conversion_success:
+                    raise Exception(f"All PMTiles conversion methods failed for {theme}")
+                
+                # Verify output file
+                if not os.path.exists(geojson_file) or os.path.getsize(geojson_file) == 0:
+                    raise Exception(f"No valid GeoJSON output produced for {theme}")
+                
+                logger.info(f"✓ Successfully converted PMTiles to GeoJSON: {geojson_file} ({os.path.getsize(geojson_file):,} bytes)")
                 
                 logger.info(f"✓ Converted PMTiles to GeoJSON: {geojson_file}")
                 
@@ -1618,8 +1671,6 @@ class PMNCompiler:
             logger.error(f"PMN compilation failed: {e}")
             self._update_progress(0, 'FAILED')
             raise
-        finally:
-            self.cleanup()
 
 def main():
     """Main function"""
