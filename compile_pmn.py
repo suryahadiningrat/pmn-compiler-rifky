@@ -1289,6 +1289,276 @@ class PMNCompiler:
         except Exception as e:
             logger.warning(f"Failed to cleanup temporary directory: {e}")
 
+    def _check_file_exists_in_minio(self, object_path: str) -> bool:
+        """Check if file exists in MinIO"""
+        try:
+            self.minio_client.stat_object(MINIO_CONFIG['bucket'], object_path)
+            return True
+        except S3Error:
+            return False
+
+    def _check_year_files_exist(self, year: int) -> Dict[str, bool]:
+        """Check which files exist for a specific year"""
+        files_status = {}
+        
+        # Check PMTiles
+        pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
+        pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
+        files_status['pmtiles_existing'] = self._check_file_exists_in_minio(pmtiles_existing)
+        files_status['pmtiles_potensi'] = self._check_file_exists_in_minio(pmtiles_potensi)
+        
+        # Check Shapefile
+        shp_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.zip"
+        shp_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.zip"
+        files_status['shp_existing'] = self._check_file_exists_in_minio(shp_existing)
+        files_status['shp_potensi'] = self._check_file_exists_in_minio(shp_potensi)
+        
+        # Check GDB
+        gdb_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.gdb.zip"
+        gdb_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.gdb.zip"
+        files_status['gdb_existing'] = self._check_file_exists_in_minio(gdb_existing)
+        files_status['gdb_potensi'] = self._check_file_exists_in_minio(gdb_potensi)
+        
+        return files_status
+
+    def _convert_pmtiles_to_formats(self, year: int):
+        """Convert PMTiles to Shapefile and GDB for specific year"""
+        logger.info(f"Converting PMTiles to Shapefile and GDB for year {year}")
+        
+        # Check if both PMTiles exist
+        pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
+        pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
+        
+        if not (self._check_file_exists_in_minio(pmtiles_existing) and 
+                self._check_file_exists_in_minio(pmtiles_potensi)):
+            logger.warning(f"PMTiles files not found for year {year}, skipping conversion")
+            return
+        
+        # Download PMTiles from MinIO
+        temp_pmtiles_dir = os.path.join(self.temp_dir, f'pmtiles_{year}')
+        os.makedirs(temp_pmtiles_dir, exist_ok=True)
+        
+        try:
+            # Download existing PMTiles
+            existing_pmtiles = os.path.join(temp_pmtiles_dir, f'existing_{year}.pmtiles')
+            self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_existing, existing_pmtiles)
+            
+            # Download potensi PMTiles
+            potensi_pmtiles = os.path.join(temp_pmtiles_dir, f'potensi_{year}.pmtiles')
+            self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_potensi, potensi_pmtiles)
+            
+            # Convert PMTiles to GeoJSON first
+            for theme, pmtiles_file in [('existing', existing_pmtiles), ('potensi', potensi_pmtiles)]:
+                logger.info(f"Converting {theme} PMTiles to GeoJSON for year {year}")
+                
+                # Convert PMTiles to GeoJSON using tippecanoe-decode
+                geojson_file = os.path.join(temp_pmtiles_dir, f'{theme}_{year}.geojson')
+                
+                # Use tippecanoe-decode or pmtiles extract
+                try:
+                    # Try pmtiles extract first (if available)
+                    result = subprocess.run([
+                        'pmtiles', 'extract', pmtiles_file, geojson_file
+                    ], check=True, capture_output=True, text=True)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    # Fallback to tippecanoe-decode
+                    result = subprocess.run([
+                        'tippecanoe-decode', pmtiles_file
+                    ], check=True, capture_output=True, text=True)
+                    with open(geojson_file, 'w') as f:
+                        f.write(result.stdout)
+                
+                logger.info(f"✓ Converted PMTiles to GeoJSON: {geojson_file}")
+                
+                # Now convert GeoJSON to Shapefile and GDB
+                self._convert_geojson_to_formats(geojson_file, theme, year)
+                
+        except Exception as e:
+            logger.error(f"Failed to convert PMTiles for year {year}: {e}")
+            raise
+        finally:
+            # Cleanup temp PMTiles directory
+            if os.path.exists(temp_pmtiles_dir):
+                import shutil
+                shutil.rmtree(temp_pmtiles_dir)
+
+    def _convert_geojson_to_formats(self, geojson_file: str, theme: str, year: int):
+        """Convert GeoJSON to Shapefile and GDB formats"""
+        logger.info(f"Converting {theme} GeoJSON to Shapefile and GDB for year {year}")
+        
+        # Read GeoJSON
+        gdf = gpd.read_file(geojson_file)
+        logger.info(f"Read {theme} GeoJSON: {len(gdf)} features for year {year}")
+        
+        # Create year-specific temp directory
+        year_temp_dir = os.path.join(self.temp_dir, f'convert_{year}_{theme}')
+        os.makedirs(year_temp_dir, exist_ok=True)
+        
+        try:
+            # ========== CREATE SHAPEFILE ==========
+            # Prepare data for Shapefile (same logic as main process)
+            gdf_shp = gdf.copy()
+            
+            # Convert datetime columns to string
+            for col in gdf_shp.columns:
+                if col == 'geometry':
+                    continue
+                if pd.api.types.is_datetime64_any_dtype(gdf_shp[col]):
+                    gdf_shp[col] = gdf_shp[col].apply(
+                        lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else ''
+                    )
+            
+            # Truncate column names for Shapefile
+            column_mapping = {}
+            used_names = set()
+            for col in gdf_shp.columns:
+                if col == 'geometry':
+                    continue
+                if len(col) > 10:
+                    base_name = col[:10]
+                    new_col = base_name
+                    counter = 1
+                    while new_col in used_names or new_col in gdf_shp.columns:
+                        new_col = col[:8] + f"{counter:02d}"
+                        counter += 1
+                        if counter > 99:
+                            new_col = col[:7] + f"{counter:03d}"
+                    column_mapping[col] = new_col
+                    used_names.add(new_col)
+                else:
+                    used_names.add(col)
+            
+            if column_mapping:
+                gdf_shp = gdf_shp.rename(columns=column_mapping)
+            
+            # Create Shapefile
+            shp_dir = os.path.join(year_temp_dir, f'{theme}_shp')
+            os.makedirs(shp_dir, exist_ok=True)
+            shp_file = os.path.join(shp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{year}.shp')
+            
+            gdf_shp.to_file(shp_file, driver='ESRI Shapefile', encoding='utf-8')
+            
+            # ZIP Shapefile
+            shp_zip = os.path.join(year_temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip')
+            with zipfile.ZipFile(shp_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                extensions = ['.shp', '.shx', '.dbf', '.prj', '.cpg']
+                for ext in extensions:
+                    file_path = shp_file.replace('.shp', ext)
+                    if os.path.exists(file_path):
+                        zipf.write(file_path, os.path.basename(file_path))
+            
+            # Upload Shapefile to MinIO
+            shp_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            self.minio_client.fput_object(MINIO_CONFIG['bucket'], shp_minio_path, shp_zip)
+            logger.info(f"✓ Uploaded Shapefile: {shp_minio_path}")
+            
+            # ========== CREATE GDB ==========
+            # Prepare data for GDB (remove FID columns)
+            gdf_gdb = gdf.copy()
+            fid_columns = [col for col in gdf_gdb.columns if col.lower() in ['ogc_fid', 'fid', 'id', 'objectid']]
+            if fid_columns:
+                gdf_gdb = gdf_gdb.drop(columns=fid_columns)
+            
+            # Convert datetime to string for temp Shapefile
+            for col in gdf_gdb.columns:
+                if col == 'geometry':
+                    continue
+                if pd.api.types.is_datetime64_any_dtype(gdf_gdb[col]):
+                    gdf_gdb[col] = gdf_gdb[col].apply(
+                        lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notna(x) else ''
+                    )
+            
+            gdf_gdb = gdf_gdb.reset_index(drop=True)
+            
+            # Create temp Shapefile for GDB conversion
+            temp_shp_dir = os.path.join(year_temp_dir, f'{theme}_temp_for_gdb')
+            os.makedirs(temp_shp_dir, exist_ok=True)
+            temp_shp = os.path.join(temp_shp_dir, f'{theme}_temp.shp')
+            
+            gdf_gdb.to_file(temp_shp, driver='ESRI Shapefile')
+            
+            # Convert to GDB
+            gdb_dir = os.path.join(year_temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb')
+            result = subprocess.run([
+                'ogr2ogr',
+                '-f', 'OpenFileGDB',
+                '-dim', 'XY',
+                '-nln', f'PETAMANGROVE_{theme.upper()}_{year}',
+                gdb_dir,
+                temp_shp
+            ], check=True, capture_output=True, text=True)
+            
+            # ZIP GDB
+            gdb_zip = os.path.join(year_temp_dir, f'AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip')
+            with zipfile.ZipFile(gdb_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, dirs, files in os.walk(gdb_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, os.path.dirname(gdb_dir))
+                        zipf.write(file_path, arcname)
+            
+            # Upload GDB to MinIO
+            gdb_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            self.minio_client.fput_object(MINIO_CONFIG['bucket'], gdb_minio_path, gdb_zip)
+            logger.info(f"✓ Uploaded GDB: {gdb_minio_path}")
+            
+        except Exception as e:
+            logger.error(f"Failed to convert {theme} for year {year}: {e}")
+            raise
+        finally:
+            # Cleanup
+            if os.path.exists(year_temp_dir):
+                import shutil
+                shutil.rmtree(year_temp_dir)
+
+    def process_historical_years(self):
+        """Process historical years (2021 to current_year-1)"""
+        current_year = datetime.now().year
+        
+        logger.info("=" * 60)
+        logger.info("PROCESSING HISTORICAL YEARS")
+        logger.info("=" * 60)
+        
+        for year in range(2021, current_year):
+            if year == self.year:  # Skip current processing year
+                continue
+                
+            logger.info(f"Checking files for year {year}...")
+            files_status = self._check_year_files_exist(year)
+            
+            # Check if all files exist
+            all_files_exist = (
+                files_status['pmtiles_existing'] and files_status['pmtiles_potensi'] and
+                files_status['shp_existing'] and files_status['shp_potensi'] and
+                files_status['gdb_existing'] and files_status['gdb_potensi']
+            )
+            
+            if all_files_exist:
+                logger.info(f"✓ All files exist for year {year}, skipping...")
+                continue
+            
+            # Check if only PMTiles exist
+            pmtiles_exist = files_status['pmtiles_existing'] and files_status['pmtiles_potensi']
+            shp_gdb_missing = not (
+                files_status['shp_existing'] and files_status['shp_potensi'] and
+                files_status['gdb_existing'] and files_status['gdb_potensi']
+            )
+            
+            if pmtiles_exist and shp_gdb_missing:
+                logger.info(f"📁 PMTiles exist but Shapefile/GDB missing for year {year}, converting...")
+                try:
+                    self._convert_pmtiles_to_formats(year)
+                    logger.info(f"✓ Successfully converted files for year {year}")
+                except Exception as e:
+                    logger.error(f"❌ Failed to convert files for year {year}: {e}")
+                    continue
+            else:
+                logger.warning(f"⚠️  Year {year} requires full processing (missing PMTiles), skipping for now...")
+                logger.info(f"  Files status: {files_status}")
+        
+        logger.info("Historical years processing completed")
+        logger.info("=" * 60)
+
     def run(self):
         """Run the complete PMN compilation process"""
         try:
@@ -1340,11 +1610,16 @@ class PMNCompiler:
             
             logger.info("PMN compilation completed successfully!")
             
+            # Process historical years (2021 to current year)
+            logger.info("Starting historical years processing...")
+            self.process_historical_years()
+            
         except Exception as e:
             logger.error(f"PMN compilation failed: {e}")
             self._update_progress(0, 'FAILED')
             raise
-
+        finally:
+            self.cleanup()
 
 def main():
     """Main function"""
