@@ -1911,8 +1911,24 @@ class PMNCompiler:
         
         # Log detailed geometry type breakdown
         if len(nonpolygons_gdf) > 0:
-            geom_type_counts = nonpolygons_gdf.geometry.geom_type.value_counts()
-            logger.info(f"Non-polygon breakdown: {dict(geom_type_counts)}")
+            # Check for None or empty geometries first
+            valid_geoms = nonpolygons_gdf.geometry.notna() & (~nonpolygons_gdf.geometry.is_empty)
+            logger.info(f"Non-polygon geometries: {len(nonpolygons_gdf)} total, {valid_geoms.sum()} valid (non-null/non-empty)")
+            
+            if valid_geoms.sum() > 0:
+                geom_type_counts = nonpolygons_gdf[valid_geoms].geometry.geom_type.value_counts()
+                logger.info(f"Non-polygon breakdown: {dict(geom_type_counts)}")
+            else:
+                logger.warning("All non-polygon geometries are None or empty!")
+                
+            # Sample a few geometries for debugging
+            sample_size = min(5, len(nonpolygons_gdf))
+            for i in range(sample_size):
+                geom = nonpolygons_gdf.iloc[i].geometry
+                if geom is not None:
+                    logger.debug(f"Sample geometry {i}: type={geom.geom_type}, is_empty={geom.is_empty}, coords_available={hasattr(geom, 'coords')}")
+                else:
+                    logger.debug(f"Sample geometry {i}: None")
 
         # Attempt to convert non-polygon geometries to polygons where sensible
         converted_records = []
@@ -1923,10 +1939,17 @@ class PMNCompiler:
                 if geom is None or geom.is_empty:
                     continue
 
+                # Get geometry type safely
+                try:
+                    geom_type = geom.geom_type
+                except Exception as e:
+                    logger.debug(f"Failed to get geom_type for geometry at index {idx}: {e}")
+                    continue
+
                 new_geom = None
 
                 # For lines, try polygonize of the unary union
-                if geom.geom_type in ('LineString', 'MultiLineString'):
+                if geom_type in ('LineString', 'MultiLineString'):
                     try:
                         u = unary_union(geom)
                         polys = list(polygonize(u))
@@ -1936,11 +1959,11 @@ class PMNCompiler:
                             # fallback: buffer to generate polygon (use larger buffer)
                             new_geom = geom.buffer(0.0001)  # Increased buffer size
                     except Exception as e:
-                        logger.debug(f"Polygonize failed for {geom.geom_type}: {e}")
+                        logger.debug(f"Polygonize failed for {geom_type}: {e}")
                         new_geom = geom.buffer(0.0001)
 
                 # For points, buffer to create polygon area
-                elif geom.geom_type in ('Point', 'MultiPoint'):
+                elif geom_type in ('Point', 'MultiPoint'):
                     new_geom = geom.buffer(0.0001)  # Increased buffer size
 
                 else:
@@ -1952,7 +1975,7 @@ class PMNCompiler:
                         else:
                             new_geom = candidate
                     except Exception as e:
-                        logger.debug(f"Buffer operation failed for {geom.geom_type}: {e}")
+                        logger.debug(f"Buffer operation failed for {geom_type}: {e}")
                         new_geom = geom.buffer(0.0001)
 
                 # Final validation of new geometry
@@ -1960,14 +1983,14 @@ class PMNCompiler:
                     # assign and collect
                     row.geometry = new_geom
                     converted_records.append(row)
-                    conversion_stats[geom.geom_type] += 1
+                    conversion_stats[geom_type] += 1
                 else:
                     if new_geom is None:
-                        logger.debug(f"Failed to convert {geom.geom_type}: result is None")
+                        logger.debug(f"Failed to convert {geom_type}: result is None")
                     elif new_geom.is_empty:
-                        logger.debug(f"Failed to convert {geom.geom_type}: result is empty")
+                        logger.debug(f"Failed to convert {geom_type}: result is empty")
                     else:
-                        logger.debug(f"Failed to convert {geom.geom_type}: result type {new_geom.geom_type} not valid")
+                        logger.debug(f"Failed to convert {geom_type}: result type {new_geom.geom_type} not valid")
 
             except Exception as e:
                 logger.warning(f"Failed to convert geometry at index {idx}: {e}")
