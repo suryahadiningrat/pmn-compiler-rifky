@@ -92,12 +92,14 @@ Script ini akan menghapus semua data baseline. Pastikan backup data sebelum menj
 -- Table di masing-masing BPDAS database
 CREATE TABLE public.existing_{year}_baseline (
     ogc_fid SERIAL PRIMARY KEY,
-    geometry GEOMETRY(MultiPolygon, 4326)
+    geometry GEOMETRY(MultiPolygon, 4326),
+    bpdas VARCHAR(255)
 );
 
 CREATE TABLE public.potensi_{year}_baseline (
     ogc_fid SERIAL PRIMARY KEY,
-    geometry GEOMETRY(MultiPolygon, 4326)
+    geometry GEOMETRY(MultiPolygon, 4326),
+    bpdas VARCHAR(255)
 );
 ```
 

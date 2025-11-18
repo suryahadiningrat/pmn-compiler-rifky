@@ -369,11 +369,12 @@ class PemutakhiranBaseline:
             if baseline_exists:
                 logger.info(f"      ✓ Table {baseline_table} already exists in {bpdas_db}, skipping table creation")
             else:
-                # Create baseline table in BPDAS database (only geometry field)
+                # Create baseline table in BPDAS database (geometry + bpdas fields)
                 bpdas_cursor.execute(f"""
                     CREATE TABLE public.{baseline_table} (
                         ogc_fid SERIAL PRIMARY KEY,
-                        geometry GEOMETRY(MultiPolygon, 4326)
+                        geometry GEOMETRY(MultiPolygon, 4326),
+                        bpdas VARCHAR(255)
                     )
                 """)
                 bpdas_cursor.connection.commit()
@@ -429,15 +430,16 @@ class PemutakhiranBaseline:
                 bpdas_cursor.execute(f"""
                     SELECT COUNT(*) FROM public.{baseline_table}
                     WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
-                """, (psycopg2.Binary(geom_binary),))
+                    AND bpdas = %s
+                """, (psycopg2.Binary(geom_binary), bpdas_db))
                 
                 exists = bpdas_cursor.fetchone()[0] > 0
                 
                 if not exists:
                     bpdas_cursor.execute(f"""
-                        INSERT INTO public.{baseline_table} (geometry)
-                        VALUES (ST_Force2D(ST_GeomFromWKB(%s, 4326)))
-                    """, (psycopg2.Binary(geom_binary),))
+                        INSERT INTO public.{baseline_table} (geometry, bpdas)
+                        VALUES (ST_Force2D(ST_GeomFromWKB(%s, 4326)), %s)
+                    """, (psycopg2.Binary(geom_binary), bpdas_db))
                     inserted_bpdas += 1
             
             bpdas_cursor.connection.commit()
