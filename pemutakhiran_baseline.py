@@ -178,99 +178,113 @@ class PemutakhiranBaseline:
             conn = self._get_db_connection()
             cursor = conn.cursor()
             
-            # Create existing baseline table with all fields from QC table
-            existing_table = f'existing_{self.year}_baseline'
-            cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS pmn.{existing_table} (
-                    ogc_fid SERIAL PRIMARY KEY,
-                    geometry GEOMETRY(MultiPolygon, 4326),
-                    bpdas VARCHAR,
-                    kttj VARCHAR,
-                    smbdt VARCHAR,
-                    thnbuat VARCHAR,
-                    ints VARCHAR,
-                    remark VARCHAR,
-                    struktur_v VARCHAR,
-                    lsmgr DOUBLE PRECISION,
-                    shape_leng DOUBLE PRECISION,
-                    shape_area DOUBLE PRECISION,
-                    namobj VARCHAR,
-                    fcode VARCHAR,
-                    lcode VARCHAR,
-                    srs_id VARCHAR,
-                    metadata VARCHAR,
-                    kode_prov BIGINT,
-                    fungsikws BIGINT,
-                    noskkws VARCHAR,
-                    tglskkws VARCHAR,
-                    lskkws DOUBLE PRECISION,
-                    kawasan VARCHAR,
-                    konservasi VARCHAR,
-                    kab VARCHAR,
-                    prov VARCHAR,
-                    qcstatus JSONB,
-                    event TEXT,
-                    updated_at TIMESTAMP,
-                    id INTEGER,
-                    tiff_path VARCHAR(255),
-                    status_p VARCHAR,
-                    alasan_p TEXT,
-                    kttj_p VARCHAR,
-                    catatan_p TEXT,
-                    tim_qc VARCHAR(255),
-                    nama_operator VARCHAR
-                )
-            """)
-            logger.info(f"✓ Table pmn.{existing_table} created/verified")
+            # Get structure from first available BPDAS database
+            # Try citarumciliwung first as reference
+            reference_db = None
+            for bpdas_db in self.bpdas_list:
+                try:
+                    test_conn = self._get_db_connection(bpdas_db)
+                    test_cursor = test_conn.cursor()
+                    
+                    # Check if QC tables exist
+                    test_cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = %s
+                        )
+                    """, (f'existing_{self.year}_qc',))
+                    
+                    if test_cursor.fetchone()[0]:
+                        reference_db = bpdas_db
+                        test_cursor.close()
+                        test_conn.close()
+                        break
+                    
+                    test_cursor.close()
+                    test_conn.close()
+                except:
+                    continue
             
-            # Create potensi baseline table with all fields from QC table
-            potensi_table = f'potensi_{self.year}_baseline'
-            cursor.execute(f"""
-                CREATE TABLE IF NOT EXISTS pmn.{potensi_table} (
-                    ogc_fid SERIAL PRIMARY KEY,
-                    geometry GEOMETRY(MultiPolygon, 4326),
-                    tahun INTEGER,
-                    objectid NUMERIC,
-                    bpdas VARCHAR,
-                    kab VARCHAR,
-                    prov VARCHAR,
-                    smbrdt VARCHAR,
-                    thnbuat VARCHAR,
-                    ints VARCHAR,
-                    ktrgn VARCHAR,
-                    keterangan VARCHAR,
-                    alasan VARCHAR,
-                    remark VARCHAR,
-                    klshtn VARCHAR,
-                    kws VARCHAR,
-                    namobj VARCHAR,
-                    kawasan VARCHAR,
-                    luas NUMERIC,
-                    qcstatus JSONB,
-                    event TEXT,
-                    updated_at TIMESTAMP,
-                    id INTEGER,
-                    tiff_path VARCHAR(255),
-                    status_p VARCHAR,
-                    alasan_p TEXT,
-                    ptrmgr_p VARCHAR,
-                    catatan_p TEXT,
-                    tim_qc VARCHAR(255),
-                    nama_operator VARCHAR
-                )
-            """)
-            logger.info(f"✓ Table pmn.{potensi_table} created/verified")
+            if not reference_db:
+                logger.error("No reference BPDAS database found with QC tables")
+                return False
             
-            # Create indexes for better performance
-            cursor.execute(f"""
-                CREATE INDEX IF NOT EXISTS idx_{existing_table}_geom 
-                ON pmn.{existing_table} USING GIST (geometry)
-            """)
+            logger.info(f"Using {reference_db} as reference for table structure")
             
-            cursor.execute(f"""
-                CREATE INDEX IF NOT EXISTS idx_{potensi_table}_geom 
-                ON pmn.{potensi_table} USING GIST (geometry)
-            """)
+            # Connect to reference database
+            ref_conn = self._get_db_connection(reference_db)
+            ref_cursor = ref_conn.cursor()
+            
+            # Create baseline tables by copying from reference QC tables
+            for theme in ['existing', 'potensi']:
+                qc_table = f'{theme}_{self.year}_qc'
+                baseline_table = f'{theme}_{self.year}_baseline'
+                
+                # Check if QC table exists
+                ref_cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = %s
+                    )
+                """, (qc_table,))
+                
+                if not ref_cursor.fetchone()[0]:
+                    logger.info(f"  ⚠ {qc_table} not found in {reference_db}, skipping")
+                    continue
+                
+                # Get table structure
+                ref_cursor.execute(f"""
+                    SELECT column_name, data_type, character_maximum_length, udt_name
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = '{qc_table}'
+                    ORDER BY ordinal_position
+                """)
+                
+                columns_def = []
+                for row in ref_cursor.fetchall():
+                    col_name = row[0]
+                    data_type = row[1]
+                    char_length = row[2]
+                    udt_name = row[3]
+                    
+                    # Build column definition
+                    if col_name == 'ogc_fid':
+                        columns_def.append(f"{col_name} SERIAL PRIMARY KEY")
+                    elif col_name == 'geometry':
+                        columns_def.append(f"{col_name} GEOMETRY(MultiPolygon, 4326)")
+                    elif data_type == 'jsonb':
+                        columns_def.append(f"{col_name} JSONB")
+                    elif data_type == 'character varying':
+                        if char_length:
+                            columns_def.append(f"{col_name} VARCHAR({char_length})")
+                        else:
+                            columns_def.append(f"{col_name} VARCHAR")
+                    elif data_type == 'USER-DEFINED':
+                        columns_def.append(f"{col_name} {udt_name}")
+                    else:
+                        columns_def.append(f"{col_name} {data_type.upper()}")
+                
+                # Create table
+                columns_str = ',\n                    '.join(columns_def)
+                cursor.execute(f"""
+                    CREATE TABLE IF NOT EXISTS pmn.{baseline_table} (
+                        {columns_str}
+                    )
+                """)
+                
+                # Create index
+                cursor.execute(f"""
+                    CREATE INDEX IF NOT EXISTS idx_{baseline_table}_geom 
+                    ON pmn.{baseline_table} USING GIST (geometry)
+                """)
+                
+                logger.info(f"  ✓ Table pmn.{baseline_table} created/verified")
+            
+            ref_cursor.close()
+            ref_conn.close()
             
             conn.commit()
             cursor.close()
@@ -278,6 +292,7 @@ class PemutakhiranBaseline:
             
             self._update_state_progress(10, qc_completed=0, bpdas_complete=0)
             logger.info("Step 2 completed: PMN baseline tables created")
+            return True
             
         except Exception as e:
             logger.error(f"Step 2 failed: {e}")
@@ -285,16 +300,29 @@ class PemutakhiranBaseline:
 
     def _check_qc_status_all_true(self, qcstatus: List[Dict]) -> bool:
         """
-        Check if all QC status items are true (except Remarks which can be any value)
+        Check if all QC status items are valid (except Remarks which can be any value)
+        
+        Valid values: 'true', 'sesuai', 'lengkap', 'sudah sesuai semua', 'sudah sesuai Sebagian',
+                      'tidak terdapat gap/overlap poligon'
         
         Args:
             qcstatus: List of QC status dictionaries
             
         Returns:
-            True if all non-Remarks items have value='true'
+            True if all non-Remarks items have valid values
         """
         if not qcstatus or not isinstance(qcstatus, list):
             return False
+        
+        # Valid values that indicate QC passed
+        valid_values = {
+            'true',
+            'sesuai', 
+            'lengkap',
+            'sudah sesuai semua',
+            'sudah sesuai Sebagian',
+            'tidak terdapat gap/overlap poligon'
+        }
         
         for item in qcstatus:
             if not isinstance(item, dict):
@@ -307,11 +335,71 @@ class PemutakhiranBaseline:
             if 'remark' in title.lower():
                 continue
             
-            # All other items must be 'true'
-            if value != 'true':
+            # All other items must have valid values
+            # Reject: null, 'null', false, 'false', 'partial', etc.
+            if value not in valid_values:
                 return False
         
         return True
+    
+    def _get_table_columns(self, cursor, table_name: str) -> List[str]:
+        """
+        Get list of columns for a table (excluding ogc_fid)
+        
+        Args:
+            cursor: Database cursor
+            table_name: Name of the table
+            
+        Returns:
+            List of column names
+        """
+        cursor.execute(f"""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+            AND table_name = '{table_name}'
+            AND column_name != 'ogc_fid'
+            ORDER BY ordinal_position
+        """)
+        
+        columns = [row[0] for row in cursor.fetchall()]
+        return columns
+
+    def _create_baseline_table_from_qc(self, cursor, qc_table: str, baseline_table: str):
+        """
+        Create baseline table by copying structure from QC table
+        
+        Args:
+            cursor: Database cursor
+            qc_table: Source QC table name
+            baseline_table: Target baseline table name
+        """
+        # CREATE TABLE LIKE doesn't properly copy SERIAL, so we need to:
+        # 1. Create table structure
+        # 2. Create sequence for ogc_fid
+        # 3. Set default value
+        
+        cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS public.{baseline_table} (LIKE public.{qc_table} INCLUDING ALL)
+        """)
+        
+        # Create sequence for ogc_fid
+        cursor.execute(f"""
+            CREATE SEQUENCE IF NOT EXISTS {baseline_table}_ogc_fid_seq
+        """)
+        
+        # Set ogc_fid default to use sequence
+        cursor.execute(f"""
+            ALTER TABLE public.{baseline_table} 
+            ALTER COLUMN ogc_fid SET DEFAULT nextval('{baseline_table}_ogc_fid_seq'::regclass)
+        """)
+        
+        # Associate sequence with column (for proper DROP behavior)
+        cursor.execute(f"""
+            ALTER SEQUENCE {baseline_table}_ogc_fid_seq OWNED BY public.{baseline_table}.ogc_fid
+        """)
+        
+        cursor.connection.commit()
 
     def step_3_process_bpdas_databases(self):
         """Step 3: Process each BPDAS database and create/populate baseline tables"""
@@ -427,144 +515,80 @@ class PemutakhiranBaseline:
             
             baseline_exists = bpdas_cursor.fetchone()[0]
             
+            # Check if baseline table has correct structure (compare column count)
+            needs_recreation = False
             if baseline_exists:
-                logger.info(f"      ✓ Table {baseline_table} already exists in {bpdas_db}, skipping table creation")
-            else:
-                # Create baseline table in BPDAS database with all fields from QC table
-                if theme == 'existing':
-                    bpdas_cursor.execute(f"""
-                        CREATE TABLE public.{baseline_table} (
-                            ogc_fid SERIAL PRIMARY KEY,
-                            geometry GEOMETRY(MultiPolygon, 4326),
-                            bpdas VARCHAR,
-                            kttj VARCHAR,
-                            smbdt VARCHAR,
-                            thnbuat VARCHAR,
-                            ints VARCHAR,
-                            remark VARCHAR,
-                            struktur_v VARCHAR,
-                            lsmgr DOUBLE PRECISION,
-                            shape_leng DOUBLE PRECISION,
-                            shape_area DOUBLE PRECISION,
-                            namobj VARCHAR,
-                            fcode VARCHAR,
-                            lcode VARCHAR,
-                            srs_id VARCHAR,
-                            metadata VARCHAR,
-                            kode_prov BIGINT,
-                            fungsikws BIGINT,
-                            noskkws VARCHAR,
-                            tglskkws VARCHAR,
-                            lskkws DOUBLE PRECISION,
-                            kawasan VARCHAR,
-                            konservasi VARCHAR,
-                            kab VARCHAR,
-                            prov VARCHAR,
-                            qcstatus JSONB,
-                            event TEXT,
-                            updated_at TIMESTAMP,
-                            id INTEGER,
-                            tiff_path VARCHAR(255),
-                            status_p VARCHAR,
-                            alasan_p TEXT,
-                            kttj_p VARCHAR,
-                            catatan_p TEXT,
-                            tim_qc VARCHAR(255),
-                            nama_operator VARCHAR
-                        )
-                    """)
-                else:  # potensi
-                    bpdas_cursor.execute(f"""
-                        CREATE TABLE public.{baseline_table} (
-                            ogc_fid SERIAL PRIMARY KEY,
-                            geometry GEOMETRY(MultiPolygon, 4326),
-                            tahun INTEGER,
-                            objectid NUMERIC,
-                            bpdas VARCHAR,
-                            kab VARCHAR,
-                            prov VARCHAR,
-                            smbrdt VARCHAR,
-                            thnbuat VARCHAR,
-                            ints VARCHAR,
-                            ktrgn VARCHAR,
-                            keterangan VARCHAR,
-                            alasan VARCHAR,
-                            remark VARCHAR,
-                            klshtn VARCHAR,
-                            kws VARCHAR,
-                            namobj VARCHAR,
-                            kawasan VARCHAR,
-                            luas NUMERIC,
-                            qcstatus JSONB,
-                            event TEXT,
-                            updated_at TIMESTAMP,
-                            id INTEGER,
-                            tiff_path VARCHAR(255),
-                            status_p VARCHAR,
-                            alasan_p TEXT,
-                            ptrmgr_p VARCHAR,
-                            catatan_p TEXT,
-                            tim_qc VARCHAR(255),
-                            nama_operator VARCHAR
-                        )
-                    """)
-                bpdas_cursor.connection.commit()
+                # Get QC table column count
+                qc_cols = self._get_table_columns(bpdas_cursor, qc_table)
+                qc_col_count = len(qc_cols) + 1  # +1 for geometry (excluded by _get_table_columns)
                 
-                # Create index
-                bpdas_cursor.execute(f"""
-                    CREATE INDEX idx_{baseline_table}_geom 
-                    ON public.{baseline_table} USING GIST (geometry)
-                """)
-                bpdas_cursor.connection.commit()
+                # Get baseline table column count
+                bpdas_cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = %s
+                """, (baseline_table,))
+                baseline_col_count = bpdas_cursor.fetchone()[0]
                 
+                if qc_col_count != baseline_col_count:
+                    logger.info(f"      ⚠ Table {baseline_table} exists but has wrong structure ({baseline_col_count} vs {qc_col_count} columns), recreating...")
+                    needs_recreation = True
+                else:
+                    logger.info(f"      ✓ Table {baseline_table} already exists with correct structure")
+            
+            if not baseline_exists or needs_recreation:
+                if needs_recreation:
+                    # Drop old table
+                    bpdas_cursor.execute(f"DROP TABLE IF EXISTS public.{baseline_table} CASCADE")
+                    bpdas_cursor.connection.commit()
+                
+                # Create baseline table by copying structure from QC table
+                self._create_baseline_table_from_qc(bpdas_cursor, qc_table, baseline_table)
                 logger.info(f"      ✓ Created table {baseline_table} in {bpdas_db}")
             
             # 2. Get QC data that passed all validations
             # Use DISTINCT ON to get the latest record for each geometry (removes duplicates)
             # Use ST_AsBinary to properly handle geometry data
-            # Fetch ALL fields from QC table
-            if theme == 'existing':
-                query = f"""
-                    SELECT DISTINCT ON (ST_AsText(geometry))
-                        ST_AsBinary(geometry) as geom_binary,
-                        bpdas, kttj, smbdt, thnbuat, ints, remark, struktur_v,
-                        lsmgr, shape_leng, shape_area, namobj, fcode, lcode, srs_id,
-                        metadata, kode_prov, fungsikws, noskkws, tglskkws, lskkws,
-                        kawasan, konservasi, kab, prov, qcstatus, event, updated_at,
-                        id, tiff_path, status_p, alasan_p, kttj_p, catatan_p,
-                        tim_qc, nama_operator,
-                        ogc_fid
-                    FROM public.{qc_table}
-                    WHERE qcstatus IS NOT NULL
-                      AND geometry IS NOT NULL
-                    ORDER BY ST_AsText(geometry), ogc_fid DESC
-                """
-            else:  # potensi
-                query = f"""
-                    SELECT DISTINCT ON (ST_AsText(geometry))
-                        ST_AsBinary(geometry) as geom_binary,
-                        tahun, objectid, bpdas, kab, prov, smbrdt, thnbuat, ints,
-                        ktrgn, keterangan, alasan, remark, klshtn, kws, namobj,
-                        kawasan, luas, qcstatus, event, updated_at, id, tiff_path,
-                        status_p, alasan_p, ptrmgr_p, catatan_p, tim_qc, nama_operator,
-                        ogc_fid
-                    FROM public.{qc_table}
-                    WHERE qcstatus IS NOT NULL
-                      AND geometry IS NOT NULL
-                    ORDER BY ST_AsText(geometry), ogc_fid DESC
-                """
+            # Fetch ALL fields from QC table dynamically
+            
+            # Get all columns except ogc_fid and geometry
+            columns = self._get_table_columns(bpdas_cursor, qc_table)
+            
+            # Build column list for SELECT (excluding ogc_fid and geometry which we handle separately)
+            select_columns = [col for col in columns if col not in ['ogc_fid', 'geometry']]
+            columns_str = ', '.join(select_columns)
+            
+            # Build query
+            query = f"""
+                SELECT DISTINCT ON (ST_AsText(geometry))
+                    ST_AsBinary(geometry) as geom_binary,
+                    {columns_str},
+                    ogc_fid
+                FROM public.{qc_table}
+                WHERE qcstatus IS NOT NULL
+                  AND geometry IS NOT NULL
+                ORDER BY ST_AsText(geometry), ogc_fid DESC
+            """
             
             bpdas_cursor.execute(query)
             qc_records = bpdas_cursor.fetchall()
             
+            # Find qcstatus column index
+            qcstatus_idx = None
+            for i, col in enumerate(select_columns, start=1):  # start=1 because index 0 is geometry
+                if col == 'qcstatus':
+                    qcstatus_idx = i
+                    break
+            
+            if qcstatus_idx is None:
+                logger.error(f"      ✗ qcstatus column not found in {qc_table}")
+                return
+            
             logger.info(f"      Found {len(qc_records)} unique geometries in {qc_table}")
             
-            # Filter records with all QC status = true
+            # Filter records with all QC status = valid values
             valid_records = []
-            if theme == 'existing':
-                qcstatus_idx = 24  # qcstatus is at index 24 in existing query
-            else:  # potensi
-                qcstatus_idx = 17  # qcstatus is at index 17 in potensi query
             
             for record in qc_records:
                 qcstatus = record[qcstatus_idx]
@@ -580,6 +604,25 @@ class PemutakhiranBaseline:
             
             # 3. Insert into BPDAS baseline table (check for duplicates)
             # Use ST_Force2D to remove Z dimension
+            # Build INSERT statement dynamically
+            # Find bpdas column index for replacement
+            bpdas_col_idx = None
+            qcstatus_col_idx = None
+            for i, col in enumerate(select_columns, start=1):
+                if col == 'bpdas':
+                    bpdas_col_idx = i
+                if col == 'qcstatus':
+                    qcstatus_col_idx = i
+            
+            # Column names for INSERT (geometry + all columns except ogc_fid)
+            # select_columns already excludes ogc_fid and geometry
+            insert_columns = ['geometry'] + select_columns
+            columns_str = ', '.join(insert_columns)
+            
+            # Placeholders for VALUES (%s for each column)
+            placeholders = ['ST_Force2D(ST_GeomFromWKB(%s, 4326))'] + ['%s'] * len(select_columns)
+            placeholders_str = ', '.join(placeholders)
+            
             inserted_bpdas = 0
             for record in valid_records:
                 geom_binary = record[0]  # First column is always geometry
@@ -594,53 +637,22 @@ class PemutakhiranBaseline:
                 exists = bpdas_cursor.fetchone()[0] > 0
                 
                 if not exists:
-                    # Insert with all fields
-                    if theme == 'existing':
-                        bpdas_cursor.execute(f"""
-                            INSERT INTO public.{baseline_table} (
-                                geometry, bpdas, kttj, smbdt, thnbuat, ints, remark, struktur_v,
-                                lsmgr, shape_leng, shape_area, namobj, fcode, lcode, srs_id,
-                                metadata, kode_prov, fungsikws, noskkws, tglskkws, lskkws,
-                                kawasan, konservasi, kab, prov, qcstatus, event, updated_at,
-                                id, tiff_path, status_p, alasan_p, kttj_p, catatan_p,
-                                tim_qc, nama_operator
-                            )
-                            VALUES (
-                                ST_Force2D(ST_GeomFromWKB(%s, 4326)),
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                        """, (
-                            psycopg2.Binary(geom_binary),
-                            bpdas_db, record[2], record[3], record[4], record[5], record[6], record[7],
-                            record[8], record[9], record[10], record[11], record[12], record[13], record[14],
-                            record[15], record[16], record[17], record[18], record[19], record[20],
-                            record[21], record[22], record[23], record[24], json.dumps(record[25]) if record[25] else None,
-                            record[26], record[27], record[28], record[29], record[30], record[31], record[32],
-                            record[33], record[34], record[35]
-                        ))
-                    else:  # potensi
-                        bpdas_cursor.execute(f"""
-                            INSERT INTO public.{baseline_table} (
-                                geometry, tahun, objectid, bpdas, kab, prov, smbrdt, thnbuat, ints,
-                                ktrgn, keterangan, alasan, remark, klshtn, kws, namobj,
-                                kawasan, luas, qcstatus, event, updated_at, id, tiff_path,
-                                status_p, alasan_p, ptrmgr_p, catatan_p, tim_qc, nama_operator
-                            )
-                            VALUES (
-                                ST_Force2D(ST_GeomFromWKB(%s, 4326)),
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                        """, (
-                            psycopg2.Binary(geom_binary),
-                            record[1], record[2], bpdas_db, record[4], record[5], record[6], record[7],
-                            record[8], record[9], record[10], record[11], record[12], record[13], record[14],
-                            record[15], record[16], record[17], json.dumps(record[18]) if record[18] else None,
-                            record[19], record[20], record[21], record[22], record[23], record[24],
-                            record[25], record[26], record[27], record[28]
-                        ))
+                    # Prepare values: replace bpdas with database name, json.dumps for qcstatus
+                    values = []
+                    for i, col in enumerate(select_columns, start=1):
+                        if col == 'bpdas':
+                            values.append(bpdas_db)  # Use database name
+                        elif col == 'qcstatus':
+                            # JSON serialize qcstatus
+                            values.append(json.dumps(record[i]) if record[i] else None)
+                        else:
+                            values.append(record[i])
+                    
+                    # Insert
+                    bpdas_cursor.execute(f"""
+                        INSERT INTO public.{baseline_table} ({columns_str})
+                        VALUES ({placeholders_str})
+                    """, (psycopg2.Binary(geom_binary), *values))
                     inserted_bpdas += 1
             
             bpdas_cursor.connection.commit()
@@ -662,53 +674,22 @@ class PemutakhiranBaseline:
                 exists = pmn_cursor.fetchone()[0] > 0
                 
                 if not exists:
-                    # Insert with all fields
-                    if theme == 'existing':
-                        pmn_cursor.execute(f"""
-                            INSERT INTO pmn.{baseline_table} (
-                                geometry, bpdas, kttj, smbdt, thnbuat, ints, remark, struktur_v,
-                                lsmgr, shape_leng, shape_area, namobj, fcode, lcode, srs_id,
-                                metadata, kode_prov, fungsikws, noskkws, tglskkws, lskkws,
-                                kawasan, konservasi, kab, prov, qcstatus, event, updated_at,
-                                id, tiff_path, status_p, alasan_p, kttj_p, catatan_p,
-                                tim_qc, nama_operator
-                            )
-                            VALUES (
-                                ST_Force2D(ST_GeomFromWKB(%s, 4326)),
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                        """, (
-                            psycopg2.Binary(geom_binary),
-                            bpdas_db, record[2], record[3], record[4], record[5], record[6], record[7],
-                            record[8], record[9], record[10], record[11], record[12], record[13], record[14],
-                            record[15], record[16], record[17], record[18], record[19], record[20],
-                            record[21], record[22], record[23], record[24], json.dumps(record[25]) if record[25] else None,
-                            record[26], record[27], record[28], record[29], record[30], record[31], record[32],
-                            record[33], record[34], record[35]
-                        ))
-                    else:  # potensi
-                        pmn_cursor.execute(f"""
-                            INSERT INTO pmn.{baseline_table} (
-                                geometry, tahun, objectid, bpdas, kab, prov, smbrdt, thnbuat, ints,
-                                ktrgn, keterangan, alasan, remark, klshtn, kws, namobj,
-                                kawasan, luas, qcstatus, event, updated_at, id, tiff_path,
-                                status_p, alasan_p, ptrmgr_p, catatan_p, tim_qc, nama_operator
-                            )
-                            VALUES (
-                                ST_Force2D(ST_GeomFromWKB(%s, 4326)),
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                        """, (
-                            psycopg2.Binary(geom_binary),
-                            record[1], record[2], bpdas_db, record[4], record[5], record[6], record[7],
-                            record[8], record[9], record[10], record[11], record[12], record[13], record[14],
-                            record[15], record[16], record[17], json.dumps(record[18]) if record[18] else None,
-                            record[19], record[20], record[21], record[22], record[23], record[24],
-                            record[25], record[26], record[27], record[28]
-                        ))
+                    # Prepare values: replace bpdas with database name, json.dumps for qcstatus
+                    values = []
+                    for i, col in enumerate(select_columns, start=1):
+                        if col == 'bpdas':
+                            values.append(bpdas_db)  # Use database name
+                        elif col == 'qcstatus':
+                            # JSON serialize qcstatus
+                            values.append(json.dumps(record[i]) if record[i] else None)
+                        else:
+                            values.append(record[i])
+                    
+                    # Insert
+                    pmn_cursor.execute(f"""
+                        INSERT INTO pmn.{baseline_table} ({columns_str})
+                        VALUES ({placeholders_str})
+                    """, (psycopg2.Binary(geom_binary), *values))
                     inserted_pmn += 1
             
             pmn_cursor.connection.commit()

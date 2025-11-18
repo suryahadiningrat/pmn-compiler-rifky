@@ -1,0 +1,515 @@
+2025-11-18 17:08:48,357 - INFO - ================================================================================
+2025-11-18 17:08:48,358 - INFO - STARTING PEMUTAKHIRAN BASELINE PROCESS
+2025-11-18 17:08:48,358 - INFO - State ID: 6
+2025-11-18 17:08:48,358 - INFO - Test Mode: False
+2025-11-18 17:08:48,358 - INFO - ================================================================================
+2025-11-18 17:08:48,358 - INFO - ============================================================
+2025-11-18 17:08:48,358 - INFO - Step 1: Getting year and BPDAS list...
+2025-11-18 17:08:48,358 - INFO - ============================================================
+2025-11-18 17:08:48,548 - INFO - Year: 2025
+2025-11-18 17:08:48,549 - INFO - Total BPDAS to process: 34
+2025-11-18 17:08:48,828 - INFO - Progress updated: 5% - QC: 0, BPDAS: 0
+2025-11-18 17:08:48,828 - INFO - ============================================================
+2025-11-18 17:08:48,828 - INFO - Step 2: Creating baseline tables in pmn schema...
+2025-11-18 17:08:48,828 - INFO - ============================================================
+2025-11-18 17:08:49,215 - INFO - Using agamkuantan as reference for table structure
+2025-11-18 17:08:49,592 - INFO -   ✓ Table pmn.existing_2025_baseline created/verified
+2025-11-18 17:08:49,722 - INFO -   ✓ Table pmn.potensi_2025_baseline created/verified
+2025-11-18 17:08:49,952 - INFO - Progress updated: 10% - QC: 0, BPDAS: 0
+2025-11-18 17:08:49,952 - INFO - Step 2 completed: PMN baseline tables created
+2025-11-18 17:08:49,952 - INFO - ============================================================
+2025-11-18 17:08:49,952 - INFO - Step 3: Processing BPDAS databases...
+2025-11-18 17:08:49,952 - INFO - ============================================================
+2025-11-18 17:08:50,079 - INFO - 
+[1/34] Processing BPDAS: agamkuantan
+2025-11-18 17:08:50,255 - INFO -     Processing existing baseline...
+2025-11-18 17:08:50,417 - INFO -       ✓ Created table existing_2025_baseline in agamkuantan
+2025-11-18 17:08:50,526 - INFO -       Found 11 unique geometries in existing_2025_qc
+2025-11-18 17:08:50,526 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:50,526 - INFO -       No valid QC data to insert
+2025-11-18 17:08:50,527 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:50,675 - INFO -       ✓ Created table potensi_2025_baseline in agamkuantan
+2025-11-18 17:08:50,897 - INFO -       Found 126 unique geometries in potensi_2025_qc
+2025-11-18 17:08:50,897 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:50,898 - INFO -       No valid QC data to insert
+2025-11-18 17:08:51,131 - INFO - Progress updated: 12% - QC: 0, BPDAS: 1
+2025-11-18 17:08:51,131 - INFO -   ✓ agamkuantan processed successfully
+2025-11-18 17:08:51,132 - INFO - 
+[2/34] Processing BPDAS: akemalamo
+2025-11-18 17:08:51,307 - INFO -     Processing existing baseline...
+2025-11-18 17:08:51,458 - INFO -       ✓ Created table existing_2025_baseline in akemalamo
+2025-11-18 17:08:51,644 - INFO -       Found 11 unique geometries in existing_2025_qc
+2025-11-18 17:08:51,644 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:51,644 - INFO -       No valid QC data to insert
+2025-11-18 17:08:51,644 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:51,793 - INFO -       ✓ Created table potensi_2025_baseline in akemalamo
+2025-11-18 17:08:51,861 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:08:51,862 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:51,862 - INFO -       No valid QC data to insert
+2025-11-18 17:08:52,078 - INFO - Progress updated: 15% - QC: 0, BPDAS: 2
+2025-11-18 17:08:52,079 - INFO -   ✓ akemalamo processed successfully
+2025-11-18 17:08:52,079 - INFO - 
+[3/34] Processing BPDAS: asahanbarumun
+2025-11-18 17:08:52,255 - INFO -     Processing existing baseline...
+2025-11-18 17:08:52,402 - INFO -       ✓ Created table existing_2025_baseline in asahanbarumun
+2025-11-18 17:08:52,498 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:08:52,498 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:52,498 - INFO -       No valid QC data to insert
+2025-11-18 17:08:52,498 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:52,634 - INFO -       ✓ Created table potensi_2025_baseline in asahanbarumun
+2025-11-18 17:08:52,702 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:08:52,702 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:52,702 - INFO -       No valid QC data to insert
+2025-11-18 17:08:52,915 - INFO - Progress updated: 17% - QC: 0, BPDAS: 3
+2025-11-18 17:08:52,915 - INFO -   ✓ asahanbarumun processed successfully
+2025-11-18 17:08:52,915 - INFO - 
+[4/34] Processing BPDAS: barito
+2025-11-18 17:08:53,065 - INFO -     Processing existing baseline...
+2025-11-18 17:08:53,203 - INFO -       ✓ Created table existing_2025_baseline in barito
+2025-11-18 17:08:53,517 - INFO -       Found 71 unique geometries in existing_2025_qc
+2025-11-18 17:08:53,518 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:53,518 - INFO -       No valid QC data to insert
+2025-11-18 17:08:53,518 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:53,647 - INFO -       ✓ Created table potensi_2025_baseline in barito
+2025-11-18 17:08:53,708 - INFO -       Found 1 unique geometries in potensi_2025_qc
+2025-11-18 17:08:53,708 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:53,708 - INFO -       No valid QC data to insert
+2025-11-18 17:08:54,015 - INFO - Progress updated: 20% - QC: 0, BPDAS: 4
+2025-11-18 17:08:54,015 - INFO -   ✓ barito processed successfully
+2025-11-18 17:08:54,015 - INFO - 
+[5/34] Processing BPDAS: batanghari
+2025-11-18 17:08:54,203 - INFO -     Processing existing baseline...
+2025-11-18 17:08:54,380 - INFO -       ✓ Created table existing_2025_baseline in batanghari
+2025-11-18 17:08:54,552 - INFO -       Found 6 unique geometries in existing_2025_qc
+2025-11-18 17:08:54,553 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:54,553 - INFO -       No valid QC data to insert
+2025-11-18 17:08:54,553 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:54,708 - INFO -       ✓ Created table potensi_2025_baseline in batanghari
+2025-11-18 17:08:54,781 - INFO -       Found 1 unique geometries in potensi_2025_qc
+2025-11-18 17:08:54,781 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:54,781 - INFO -       No valid QC data to insert
+2025-11-18 17:08:54,990 - INFO - Progress updated: 22% - QC: 0, BPDAS: 5
+2025-11-18 17:08:54,991 - INFO -   ✓ batanghari processed successfully
+2025-11-18 17:08:54,991 - INFO - 
+[6/34] Processing BPDAS: baturusacerucuk
+2025-11-18 17:08:55,160 - INFO -     Processing existing baseline...
+2025-11-18 17:08:55,309 - INFO -       ✓ Created table existing_2025_baseline in baturusacerucuk
+2025-11-18 17:08:55,546 - INFO -       Found 41 unique geometries in existing_2025_qc
+2025-11-18 17:08:55,546 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:55,546 - INFO -       No valid QC data to insert
+2025-11-18 17:08:55,546 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:55,706 - INFO -       ✓ Created table potensi_2025_baseline in baturusacerucuk
+2025-11-18 17:08:55,811 - INFO -       Found 9 unique geometries in potensi_2025_qc
+2025-11-18 17:08:55,811 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:55,811 - INFO -       No valid QC data to insert
+2025-11-18 17:08:56,014 - INFO - Progress updated: 25% - QC: 0, BPDAS: 6
+2025-11-18 17:08:56,014 - INFO -   ✓ baturusacerucuk processed successfully
+2025-11-18 17:08:56,014 - INFO - 
+[7/34] Processing BPDAS: benainnoelmina
+2025-11-18 17:08:56,194 - INFO -     Processing existing baseline...
+2025-11-18 17:08:56,346 - INFO -       ✓ Created table existing_2025_baseline in benainnoelmina
+2025-11-18 17:08:56,863 - INFO -       Found 10 unique geometries in existing_2025_qc
+2025-11-18 17:08:56,863 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:56,863 - INFO -       No valid QC data to insert
+2025-11-18 17:08:56,863 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:57,012 - INFO -       ✓ Created table potensi_2025_baseline in benainnoelmina
+2025-11-18 17:08:57,111 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:08:57,112 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:57,112 - INFO -       No valid QC data to insert
+2025-11-18 17:08:57,402 - INFO - Progress updated: 27% - QC: 0, BPDAS: 7
+2025-11-18 17:08:57,402 - INFO -   ✓ benainnoelmina processed successfully
+2025-11-18 17:08:57,402 - INFO - 
+[8/34] Processing BPDAS: bonelimboto
+2025-11-18 17:08:57,589 - INFO -     Processing existing baseline...
+2025-11-18 17:08:57,743 - INFO -       ✓ Created table existing_2025_baseline in bonelimboto
+2025-11-18 17:08:57,848 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:08:57,849 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:57,849 - INFO -       No valid QC data to insert
+2025-11-18 17:08:57,849 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:57,991 - INFO -       ✓ Created table potensi_2025_baseline in bonelimboto
+2025-11-18 17:08:58,066 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:08:58,067 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:58,067 - INFO -       No valid QC data to insert
+2025-11-18 17:08:58,296 - INFO - Progress updated: 30% - QC: 0, BPDAS: 8
+2025-11-18 17:08:58,296 - INFO -   ✓ bonelimboto processed successfully
+2025-11-18 17:08:58,296 - INFO - 
+[9/34] Processing BPDAS: brantassampean
+2025-11-18 17:08:58,489 - INFO -     Processing existing baseline...
+2025-11-18 17:08:58,643 - INFO -       ✓ Created table existing_2025_baseline in brantassampean
+2025-11-18 17:08:58,765 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:08:58,765 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:58,765 - INFO -       No valid QC data to insert
+2025-11-18 17:08:58,765 - INFO -     Processing potensi baseline...
+2025-11-18 17:08:58,907 - INFO -       ✓ Created table potensi_2025_baseline in brantassampean
+2025-11-18 17:08:58,977 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:08:58,978 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:08:58,978 - INFO -       No valid QC data to insert
+2025-11-18 17:08:59,199 - INFO - Progress updated: 32% - QC: 0, BPDAS: 9
+2025-11-18 17:08:59,199 - INFO -   ✓ brantassampean processed successfully
+2025-11-18 17:08:59,199 - INFO - 
+[10/34] Processing BPDAS: cimanukcitanduy
+2025-11-18 17:08:59,413 - INFO -     Processing existing baseline...
+2025-11-18 17:08:59,618 - INFO -       ✓ Created table existing_2025_baseline in cimanukcitanduy
+2025-11-18 17:09:02,671 - INFO -       Found 989 unique geometries in existing_2025_qc
+2025-11-18 17:09:02,672 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:02,672 - INFO -       No valid QC data to insert
+2025-11-18 17:09:02,672 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:02,837 - INFO -       ✓ Created table potensi_2025_baseline in cimanukcitanduy
+2025-11-18 17:09:03,254 - INFO -       Found 285 unique geometries in potensi_2025_qc
+2025-11-18 17:09:03,254 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:03,255 - INFO -       No valid QC data to insert
+2025-11-18 17:09:03,475 - INFO - Progress updated: 35% - QC: 0, BPDAS: 10
+2025-11-18 17:09:03,475 - INFO -   ✓ cimanukcitanduy processed successfully
+2025-11-18 17:09:03,475 - INFO - 
+[11/34] Processing BPDAS: citarumciliwung
+2025-11-18 17:09:03,647 - INFO -     Processing existing baseline...
+2025-11-18 17:09:03,795 - INFO -       ✓ Created table existing_2025_baseline in citarumciliwung
+2025-11-18 17:09:04,060 - INFO -       Found 55 unique geometries in existing_2025_qc
+2025-11-18 17:09:04,061 - INFO -       8 geometries passed all QC validations
+2025-11-18 17:09:04,750 - INFO -       ✓ Inserted 8 new records into citarumciliwung.existing_2025_baseline
+2025-11-18 17:09:05,239 - INFO -       ✓ Inserted 8 new records into pmn.existing_2025_baseline
+2025-11-18 17:09:05,239 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:05,409 - INFO -       ✓ Created table potensi_2025_baseline in citarumciliwung
+2025-11-18 17:09:07,950 - INFO -       Found 836 unique geometries in potensi_2025_qc
+2025-11-18 17:09:07,951 - INFO -       1 geometries passed all QC validations
+2025-11-18 17:09:08,022 - INFO -       ✓ Inserted 1 new records into citarumciliwung.potensi_2025_baseline
+2025-11-18 17:09:08,119 - INFO -       ✓ Inserted 1 new records into pmn.potensi_2025_baseline
+2025-11-18 17:09:08,380 - INFO - Progress updated: 37% - QC: 9, BPDAS: 11
+2025-11-18 17:09:08,380 - INFO -   ✓ citarumciliwung processed successfully
+2025-11-18 17:09:08,380 - INFO - 
+[12/34] Processing BPDAS: dodokanmoyosari
+2025-11-18 17:09:08,583 - INFO -     Processing existing baseline...
+2025-11-18 17:09:08,746 - INFO -       ✓ Created table existing_2025_baseline in dodokanmoyosari
+2025-11-18 17:09:08,853 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:08,853 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:08,854 - INFO -       No valid QC data to insert
+2025-11-18 17:09:08,854 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:09,016 - INFO -       ✓ Created table potensi_2025_baseline in dodokanmoyosari
+2025-11-18 17:09:09,106 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:09,106 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:09,106 - INFO -       No valid QC data to insert
+2025-11-18 17:09:09,338 - INFO - Progress updated: 40% - QC: 9, BPDAS: 12
+2025-11-18 17:09:09,338 - INFO -   ✓ dodokanmoyosari processed successfully
+2025-11-18 17:09:09,339 - INFO - 
+[13/34] Processing BPDAS: indragirirokan
+2025-11-18 17:09:09,495 - INFO -     Processing existing baseline...
+2025-11-18 17:09:09,642 - INFO -       ✓ Created table existing_2025_baseline in indragirirokan
+2025-11-18 17:09:10,886 - INFO -       Found 138 unique geometries in existing_2025_qc
+2025-11-18 17:09:10,887 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:10,887 - INFO -       No valid QC data to insert
+2025-11-18 17:09:10,887 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:11,074 - INFO -       ✓ Created table potensi_2025_baseline in indragirirokan
+2025-11-18 17:09:11,134 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:11,135 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:11,135 - INFO -       No valid QC data to insert
+2025-11-18 17:09:11,350 - INFO - Progress updated: 42% - QC: 9, BPDAS: 13
+2025-11-18 17:09:11,350 - INFO -   ✓ indragirirokan processed successfully
+2025-11-18 17:09:11,350 - INFO - 
+[14/34] Processing BPDAS: jeneberangsaddang
+2025-11-18 17:09:11,535 - INFO -     Processing existing baseline...
+2025-11-18 17:09:11,690 - INFO -       ✓ Created table existing_2025_baseline in jeneberangsaddang
+2025-11-18 17:09:11,787 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:11,787 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:11,787 - INFO -       No valid QC data to insert
+2025-11-18 17:09:11,787 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:11,932 - INFO -       ✓ Created table potensi_2025_baseline in jeneberangsaddang
+2025-11-18 17:09:12,004 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:12,005 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:12,005 - INFO -       No valid QC data to insert
+2025-11-18 17:09:12,270 - INFO - Progress updated: 45% - QC: 9, BPDAS: 14
+2025-11-18 17:09:12,270 - INFO -   ✓ jeneberangsaddang processed successfully
+2025-11-18 17:09:12,271 - INFO - 
+[15/34] Processing BPDAS: kahayan
+2025-11-18 17:09:12,443 - INFO -     Processing existing baseline...
+2025-11-18 17:09:12,598 - INFO -       ✓ Created table existing_2025_baseline in kahayan
+2025-11-18 17:09:12,726 - INFO -       Found 15 unique geometries in existing_2025_qc
+2025-11-18 17:09:12,726 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:12,726 - INFO -       No valid QC data to insert
+2025-11-18 17:09:12,726 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:12,878 - INFO -       ✓ Created table potensi_2025_baseline in kahayan
+2025-11-18 17:09:12,949 - INFO -       Found 1 unique geometries in potensi_2025_qc
+2025-11-18 17:09:12,950 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:12,950 - INFO -       No valid QC data to insert
+2025-11-18 17:09:13,157 - INFO - Progress updated: 47% - QC: 9, BPDAS: 15
+2025-11-18 17:09:13,157 - INFO -   ✓ kahayan processed successfully
+2025-11-18 17:09:13,157 - INFO - 
+[16/34] Processing BPDAS: kapuas
+2025-11-18 17:09:13,346 - INFO -     Processing existing baseline...
+2025-11-18 17:09:13,495 - INFO -       ✓ Created table existing_2025_baseline in kapuas
+2025-11-18 17:09:13,591 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:13,591 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:13,591 - INFO -       No valid QC data to insert
+2025-11-18 17:09:13,591 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:13,738 - INFO -       ✓ Created table potensi_2025_baseline in kapuas
+2025-11-18 17:09:13,812 - INFO -       Found 1 unique geometries in potensi_2025_qc
+2025-11-18 17:09:13,812 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:13,813 - INFO -       No valid QC data to insert
+2025-11-18 17:09:14,023 - INFO - Progress updated: 50% - QC: 9, BPDAS: 16
+2025-11-18 17:09:14,023 - INFO -   ✓ kapuas processed successfully
+2025-11-18 17:09:14,023 - INFO - 
+[17/34] Processing BPDAS: karama
+2025-11-18 17:09:14,196 - INFO -     Processing existing baseline...
+2025-11-18 17:09:14,356 - INFO -       ✓ Created table existing_2025_baseline in karama
+2025-11-18 17:09:14,573 - INFO -       Found 26 unique geometries in existing_2025_qc
+2025-11-18 17:09:14,574 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:14,574 - INFO -       No valid QC data to insert
+2025-11-18 17:09:14,574 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:14,722 - INFO -       ✓ Created table potensi_2025_baseline in karama
+2025-11-18 17:09:14,797 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:14,797 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:14,797 - INFO -       No valid QC data to insert
+2025-11-18 17:09:15,023 - INFO - Progress updated: 52% - QC: 9, BPDAS: 17
+2025-11-18 17:09:15,023 - INFO -   ✓ karama processed successfully
+2025-11-18 17:09:15,023 - INFO - 
+[18/34] Processing BPDAS: ketahun
+2025-11-18 17:09:15,203 - INFO -     Processing existing baseline...
+2025-11-18 17:09:15,361 - INFO -       ✓ Created table existing_2025_baseline in ketahun
+2025-11-18 17:09:15,468 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:09:15,469 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:15,469 - INFO -       No valid QC data to insert
+2025-11-18 17:09:15,469 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:15,620 - INFO -       ✓ Created table potensi_2025_baseline in ketahun
+2025-11-18 17:09:15,692 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:15,692 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:15,692 - INFO -       No valid QC data to insert
+2025-11-18 17:09:15,907 - INFO - Progress updated: 55% - QC: 9, BPDAS: 18
+2025-11-18 17:09:15,907 - INFO -   ✓ ketahun processed successfully
+2025-11-18 17:09:15,907 - INFO - 
+[19/34] Processing BPDAS: konaweha
+2025-11-18 17:09:16,085 - INFO -     Processing existing baseline...
+2025-11-18 17:09:16,239 - INFO -       ✓ Created table existing_2025_baseline in konaweha
+2025-11-18 17:09:16,344 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:09:16,345 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:16,345 - INFO -       No valid QC data to insert
+2025-11-18 17:09:16,345 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:16,499 - INFO -       ✓ Created table potensi_2025_baseline in konaweha
+2025-11-18 17:09:16,571 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:16,571 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:16,571 - INFO -       No valid QC data to insert
+2025-11-18 17:09:16,791 - INFO - Progress updated: 57% - QC: 9, BPDAS: 19
+2025-11-18 17:09:16,791 - INFO -   ✓ konaweha processed successfully
+2025-11-18 17:09:16,792 - INFO - 
+[20/34] Processing BPDAS: kruengaceh
+2025-11-18 17:09:16,963 - INFO -     Processing existing baseline...
+2025-11-18 17:09:17,111 - INFO -       ✓ Created table existing_2025_baseline in kruengaceh
+2025-11-18 17:09:17,864 - INFO -       Found 15 unique geometries in existing_2025_qc
+2025-11-18 17:09:17,864 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:17,864 - INFO -       No valid QC data to insert
+2025-11-18 17:09:17,865 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:18,008 - INFO -       ✓ Created table potensi_2025_baseline in kruengaceh
+2025-11-18 17:09:18,079 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:18,079 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:18,079 - INFO -       No valid QC data to insert
+2025-11-18 17:09:18,291 - INFO - Progress updated: 60% - QC: 9, BPDAS: 20
+2025-11-18 17:09:18,291 - INFO -   ✓ kruengaceh processed successfully
+2025-11-18 17:09:18,292 - INFO - 
+[21/34] Processing BPDAS: mahakamberau
+2025-11-18 17:09:18,488 - INFO -     Processing existing baseline...
+2025-11-18 17:09:18,660 - INFO -       ✓ Created table existing_2025_baseline in mahakamberau
+2025-11-18 17:09:21,156 - INFO -       Found 134 unique geometries in existing_2025_qc
+2025-11-18 17:09:21,158 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:21,158 - INFO -       No valid QC data to insert
+2025-11-18 17:09:21,158 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:21,305 - INFO -       ✓ Created table potensi_2025_baseline in mahakamberau
+2025-11-18 17:09:21,853 - INFO -       Found 112 unique geometries in potensi_2025_qc
+2025-11-18 17:09:21,854 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:21,854 - INFO -       No valid QC data to insert
+2025-11-18 17:09:22,079 - INFO - Progress updated: 62% - QC: 9, BPDAS: 21
+2025-11-18 17:09:22,079 - INFO -   ✓ mahakamberau processed successfully
+2025-11-18 17:09:22,079 - INFO - 
+[22/34] Processing BPDAS: memberamo
+2025-11-18 17:09:22,259 - INFO -     Processing existing baseline...
+2025-11-18 17:09:22,414 - INFO -       ✓ Created table existing_2025_baseline in memberamo
+2025-11-18 17:09:24,105 - INFO -       Found 162 unique geometries in existing_2025_qc
+2025-11-18 17:09:24,105 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:24,105 - INFO -       No valid QC data to insert
+2025-11-18 17:09:24,106 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:24,259 - INFO -       ✓ Created table potensi_2025_baseline in memberamo
+2025-11-18 17:09:24,339 - INFO -       Found 8 unique geometries in potensi_2025_qc
+2025-11-18 17:09:24,339 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:24,339 - INFO -       No valid QC data to insert
+2025-11-18 17:09:24,562 - INFO - Progress updated: 65% - QC: 9, BPDAS: 22
+2025-11-18 17:09:24,562 - INFO -   ✓ memberamo processed successfully
+2025-11-18 17:09:24,562 - INFO - 
+[23/34] Processing BPDAS: musi
+2025-11-18 17:09:24,731 - INFO -     Processing existing baseline...
+2025-11-18 17:09:24,883 - INFO -       ✓ Created table existing_2025_baseline in musi
+2025-11-18 17:09:24,987 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:24,987 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:24,987 - INFO -       No valid QC data to insert
+2025-11-18 17:09:24,987 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:25,131 - INFO -       ✓ Created table potensi_2025_baseline in musi
+2025-11-18 17:09:25,199 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:25,199 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:25,199 - INFO -       No valid QC data to insert
+2025-11-18 17:09:25,414 - INFO - Progress updated: 67% - QC: 9, BPDAS: 23
+2025-11-18 17:09:25,415 - INFO -   ✓ musi processed successfully
+2025-11-18 17:09:25,415 - INFO - 
+[24/34] Processing BPDAS: paluposo
+2025-11-18 17:09:25,583 - INFO -     Processing existing baseline...
+2025-11-18 17:09:25,735 - INFO -       ✓ Created table existing_2025_baseline in paluposo
+2025-11-18 17:09:26,465 - INFO -       Found 47 unique geometries in existing_2025_qc
+2025-11-18 17:09:26,465 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:26,465 - INFO -       No valid QC data to insert
+2025-11-18 17:09:26,465 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:26,631 - INFO -       ✓ Created table potensi_2025_baseline in paluposo
+2025-11-18 17:09:26,706 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:26,706 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:26,706 - INFO -       No valid QC data to insert
+2025-11-18 17:09:26,917 - INFO - Progress updated: 70% - QC: 9, BPDAS: 24
+2025-11-18 17:09:26,918 - INFO -   ✓ paluposo processed successfully
+2025-11-18 17:09:26,918 - INFO - 
+[25/34] Processing BPDAS: pemalijratun
+2025-11-18 17:09:27,079 - INFO -     Processing existing baseline...
+2025-11-18 17:09:27,231 - INFO -       ✓ Created table existing_2025_baseline in pemalijratun
+2025-11-18 17:09:27,338 - INFO -       Found 5 unique geometries in existing_2025_qc
+2025-11-18 17:09:27,338 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:27,338 - INFO -       No valid QC data to insert
+2025-11-18 17:09:27,338 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:27,483 - INFO -       ✓ Created table potensi_2025_baseline in pemalijratun
+2025-11-18 17:09:27,551 - INFO -       Found 2 unique geometries in potensi_2025_qc
+2025-11-18 17:09:27,551 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:27,552 - INFO -       No valid QC data to insert
+2025-11-18 17:09:27,766 - INFO - Progress updated: 72% - QC: 9, BPDAS: 25
+2025-11-18 17:09:27,767 - INFO -   ✓ pemalijratun processed successfully
+2025-11-18 17:09:27,767 - INFO - 
+[26/34] Processing BPDAS: remuransiki
+2025-11-18 17:09:27,942 - INFO -     Processing existing baseline...
+2025-11-18 17:09:28,090 - INFO -       ✓ Created table existing_2025_baseline in remuransiki
+2025-11-18 17:09:28,197 - INFO -       Found 5 unique geometries in existing_2025_qc
+2025-11-18 17:09:28,197 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:28,197 - INFO -       No valid QC data to insert
+2025-11-18 17:09:28,198 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:28,337 - INFO -       ✓ Created table potensi_2025_baseline in remuransiki
+2025-11-18 17:09:28,433 - INFO -       Found 11 unique geometries in potensi_2025_qc
+2025-11-18 17:09:28,433 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:28,433 - INFO -       No valid QC data to insert
+2025-11-18 17:09:28,695 - INFO - Progress updated: 75% - QC: 9, BPDAS: 26
+2025-11-18 17:09:28,695 - INFO -   ✓ remuransiki processed successfully
+2025-11-18 17:09:28,695 - INFO - 
+[27/34] Processing BPDAS: seijangduriangkang
+2025-11-18 17:09:28,869 - INFO -     Processing existing baseline...
+2025-11-18 17:09:29,041 - INFO -       ✓ Created table existing_2025_baseline in seijangduriangkang
+2025-11-18 17:09:29,148 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:29,148 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:29,148 - INFO -       No valid QC data to insert
+2025-11-18 17:09:29,148 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:29,307 - INFO -       ✓ Created table potensi_2025_baseline in seijangduriangkang
+2025-11-18 17:09:29,400 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:29,400 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:29,400 - INFO -       No valid QC data to insert
+2025-11-18 17:09:29,639 - INFO - Progress updated: 77% - QC: 9, BPDAS: 27
+2025-11-18 17:09:29,639 - INFO -   ✓ seijangduriangkang processed successfully
+2025-11-18 17:09:29,640 - INFO - 
+[28/34] Processing BPDAS: serayuopakprogo
+2025-11-18 17:09:29,836 - INFO -     Processing existing baseline...
+2025-11-18 17:09:30,027 - INFO -       ✓ Created table existing_2025_baseline in serayuopakprogo
+2025-11-18 17:09:30,130 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:09:30,130 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:30,130 - INFO -       No valid QC data to insert
+2025-11-18 17:09:30,130 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:30,278 - INFO -       ✓ Created table potensi_2025_baseline in serayuopakprogo
+2025-11-18 17:09:30,351 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:30,351 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:30,351 - INFO -       No valid QC data to insert
+2025-11-18 17:09:30,571 - INFO - Progress updated: 80% - QC: 9, BPDAS: 28
+2025-11-18 17:09:30,571 - INFO -   ✓ serayuopakprogo processed successfully
+2025-11-18 17:09:30,571 - INFO - 
+[29/34] Processing BPDAS: solo
+2025-11-18 17:09:30,739 - INFO -     Processing existing baseline...
+2025-11-18 17:09:30,886 - INFO -       ✓ Created table existing_2025_baseline in solo
+2025-11-18 17:09:30,966 - INFO -       Found 6 unique geometries in existing_2025_qc
+2025-11-18 17:09:30,966 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:30,966 - INFO -       No valid QC data to insert
+2025-11-18 17:09:30,966 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:31,107 - INFO -       ✓ Created table potensi_2025_baseline in solo
+2025-11-18 17:09:31,180 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:31,180 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:31,180 - INFO -       No valid QC data to insert
+2025-11-18 17:09:31,406 - INFO - Progress updated: 82% - QC: 9, BPDAS: 29
+2025-11-18 17:09:31,407 - INFO -   ✓ solo processed successfully
+2025-11-18 17:09:31,407 - INFO - 
+[30/34] Processing BPDAS: tondano
+2025-11-18 17:09:31,579 - INFO -     Processing existing baseline...
+2025-11-18 17:09:31,726 - INFO -       ✓ Created table existing_2025_baseline in tondano
+2025-11-18 17:09:31,827 - INFO -       Found 1 unique geometries in existing_2025_qc
+2025-11-18 17:09:31,828 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:31,828 - INFO -       No valid QC data to insert
+2025-11-18 17:09:31,828 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:31,979 - INFO -       ✓ Created table potensi_2025_baseline in tondano
+2025-11-18 17:09:32,041 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:32,041 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:32,041 - INFO -       No valid QC data to insert
+2025-11-18 17:09:32,270 - INFO - Progress updated: 85% - QC: 9, BPDAS: 30
+2025-11-18 17:09:32,271 - INFO -   ✓ tondano processed successfully
+2025-11-18 17:09:32,271 - INFO - 
+[31/34] Processing BPDAS: undaanyar
+2025-11-18 17:09:32,443 - INFO -     Processing existing baseline...
+2025-11-18 17:09:32,690 - INFO -       ✓ Created table existing_2025_baseline in undaanyar
+2025-11-18 17:09:32,977 - INFO -       Found 41 unique geometries in existing_2025_qc
+2025-11-18 17:09:32,977 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:32,977 - INFO -       No valid QC data to insert
+2025-11-18 17:09:32,977 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:33,120 - INFO -       ✓ Created table potensi_2025_baseline in undaanyar
+2025-11-18 17:09:33,191 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:33,191 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:33,191 - INFO -       No valid QC data to insert
+2025-11-18 17:09:33,412 - INFO - Progress updated: 87% - QC: 9, BPDAS: 31
+2025-11-18 17:09:33,413 - INFO -   ✓ undaanyar processed successfully
+2025-11-18 17:09:33,413 - INFO - 
+[32/34] Processing BPDAS: waehapubatumerah
+2025-11-18 17:09:33,586 - INFO -     Processing existing baseline...
+2025-11-18 17:09:33,746 - INFO -       ✓ Created table existing_2025_baseline in waehapubatumerah
+2025-11-18 17:09:33,997 - INFO -       Found 6 unique geometries in existing_2025_qc
+2025-11-18 17:09:33,997 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:33,997 - INFO -       No valid QC data to insert
+2025-11-18 17:09:33,997 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:34,143 - INFO -       ✓ Created table potensi_2025_baseline in waehapubatumerah
+2025-11-18 17:09:34,215 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:34,215 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:34,215 - INFO -       No valid QC data to insert
+2025-11-18 17:09:34,425 - INFO - Progress updated: 90% - QC: 9, BPDAS: 32
+2025-11-18 17:09:34,426 - INFO -   ✓ waehapubatumerah processed successfully
+2025-11-18 17:09:34,426 - INFO - 
+[33/34] Processing BPDAS: wampuseiular
+2025-11-18 17:09:34,583 - INFO -     Processing existing baseline...
+2025-11-18 17:09:34,723 - INFO -       ✓ Created table existing_2025_baseline in wampuseiular
+2025-11-18 17:09:34,857 - INFO -       Found 14 unique geometries in existing_2025_qc
+2025-11-18 17:09:34,857 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:34,857 - INFO -       No valid QC data to insert
+2025-11-18 17:09:34,857 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:34,986 - INFO -       ✓ Created table potensi_2025_baseline in wampuseiular
+2025-11-18 17:09:35,051 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:35,051 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:35,051 - INFO -       No valid QC data to insert
+2025-11-18 17:09:35,266 - INFO - Progress updated: 92% - QC: 9, BPDAS: 33
+2025-11-18 17:09:35,267 - INFO -   ✓ wampuseiular processed successfully
+2025-11-18 17:09:35,267 - INFO - 
+[34/34] Processing BPDAS: wayseputihwaysekampung
+2025-11-18 17:09:35,443 - INFO -     Processing existing baseline...
+2025-11-18 17:09:35,590 - INFO -       ✓ Created table existing_2025_baseline in wayseputihwaysekampung
+2025-11-18 17:09:35,691 - INFO -       Found 0 unique geometries in existing_2025_qc
+2025-11-18 17:09:35,691 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:35,691 - INFO -       No valid QC data to insert
+2025-11-18 17:09:35,691 - INFO -     Processing potensi baseline...
+2025-11-18 17:09:35,842 - INFO -       ✓ Created table potensi_2025_baseline in wayseputihwaysekampung
+2025-11-18 17:09:35,915 - INFO -       Found 0 unique geometries in potensi_2025_qc
+2025-11-18 17:09:35,915 - INFO -       0 geometries passed all QC validations
+2025-11-18 17:09:35,915 - INFO -       No valid QC data to insert
+2025-11-18 17:09:36,159 - INFO - Progress updated: 95% - QC: 9, BPDAS: 34
+2025-11-18 17:09:36,159 - INFO -   ✓ wayseputihwaysekampung processed successfully
+2025-11-18 17:09:36,160 - INFO - ============================================================
+2025-11-18 17:09:36,160 - INFO - PROCESSING SUMMARY:
+2025-11-18 17:09:36,160 - INFO -   Total BPDAS processed: 34/34
+2025-11-18 17:09:36,160 - INFO -   Total QC data copied: 9
+2025-11-18 17:09:36,160 - INFO - ============================================================
+2025-11-18 17:09:36,383 - INFO - Progress updated: 95% - QC: 9, BPDAS: 34
+2025-11-18 17:09:36,383 - INFO - Step 3 completed: BPDAS processing finished
+2025-11-18 17:09:36,383 - INFO - ============================================================
+2025-11-18 17:09:36,383 - INFO - Step 4: Finalizing...
+2025-11-18 17:09:36,383 - INFO - ============================================================
+2025-11-18 17:09:36,591 - INFO - Progress updated: 100% - QC: 9, BPDAS: 34
+2025-11-18 17:09:36,592 - INFO - Step 4 completed: Process finalized
+2025-11-18 17:09:36,592 - INFO - ============================================================
+2025-11-18 17:09:36,592 - INFO - ✓ PEMUTAKHIRAN BASELINE COMPLETED SUCCESSFULLY!
+2025-11-18 17:09:36,592 - INFO - ============================================================
