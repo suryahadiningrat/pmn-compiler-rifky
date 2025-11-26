@@ -179,21 +179,21 @@ class PemutakhiranBaseline:
             cursor = conn.cursor()
             
             # Get structure from first available BPDAS database
-            # Try citarumciliwung first as reference
+            # Clone from existing/potensi tables (NOT QC tables)
             reference_db = None
             for bpdas_db in self.bpdas_list:
                 try:
                     test_conn = self._get_db_connection(bpdas_db)
                     test_cursor = test_conn.cursor()
                     
-                    # Check if QC tables exist
+                    # Check if existing/potensi tables exist
                     test_cursor.execute("""
                         SELECT EXISTS (
                             SELECT FROM information_schema.tables 
                             WHERE table_schema = 'public' 
                             AND table_name = %s
                         )
-                    """, (f'existing_{self.year}_qc',))
+                    """, (f'existing_{self.year}',))
                     
                     if test_cursor.fetchone()[0]:
                         reference_db = bpdas_db
@@ -207,7 +207,7 @@ class PemutakhiranBaseline:
                     continue
             
             if not reference_db:
-                logger.error("No reference BPDAS database found with QC tables")
+                logger.error("No reference BPDAS database found with existing/potensi tables")
                 return False
             
             logger.info(f"Using {reference_db} as reference for table structure")
@@ -216,22 +216,22 @@ class PemutakhiranBaseline:
             ref_conn = self._get_db_connection(reference_db)
             ref_cursor = ref_conn.cursor()
             
-            # Create baseline tables by copying from reference QC tables
+            # Create baseline tables by copying from reference existing/potensi tables
             for theme in ['existing', 'potensi']:
-                qc_table = f'{theme}_{self.year}_qc'
+                source_table = f'{theme}_{self.year}'
                 baseline_table = f'{theme}_{self.year}_baseline'
                 
-                # Check if QC table exists
+                # Check if source table exists
                 ref_cursor.execute("""
                     SELECT EXISTS (
                         SELECT FROM information_schema.tables 
                         WHERE table_schema = 'public' 
                         AND table_name = %s
                     )
-                """, (qc_table,))
+                """, (source_table,))
                 
                 if not ref_cursor.fetchone()[0]:
-                    logger.info(f"  ⚠ {qc_table} not found in {reference_db}, skipping")
+                    logger.info(f"  ⚠ {source_table} not found in {reference_db}, skipping")
                     continue
                 
                 # Get table structure
@@ -239,7 +239,7 @@ class PemutakhiranBaseline:
                     SELECT column_name, data_type, character_maximum_length, udt_name
                     FROM information_schema.columns
                     WHERE table_schema = 'public'
-                      AND table_name = '{qc_table}'
+                      AND table_name = '{source_table}'
                     ORDER BY ordinal_position
                 """)
                 
@@ -365,13 +365,13 @@ class PemutakhiranBaseline:
         columns = [row[0] for row in cursor.fetchall()]
         return columns
 
-    def _create_baseline_table_from_qc(self, cursor, qc_table: str, baseline_table: str):
+    def _create_baseline_table_from_source(self, cursor, source_table: str, baseline_table: str):
         """
-        Create baseline table by copying structure from QC table
+        Create baseline table by copying structure from source table (existing/potensi, not QC)
         
         Args:
             cursor: Database cursor
-            qc_table: Source QC table name
+            source_table: Source table name (existing_{year} or potensi_{year})
             baseline_table: Target baseline table name
         """
         # CREATE TABLE LIKE doesn't properly copy SERIAL, so we need to:
@@ -380,7 +380,7 @@ class PemutakhiranBaseline:
         # 3. Set default value
         
         cursor.execute(f"""
-            CREATE TABLE IF NOT EXISTS public.{baseline_table} (LIKE public.{qc_table} INCLUDING ALL)
+            CREATE TABLE IF NOT EXISTS public.{baseline_table} (LIKE public.{source_table} INCLUDING ALL)
         """)
         
         # Create sequence for ogc_fid
@@ -502,6 +502,7 @@ class PemutakhiranBaseline:
         
         try:
             qc_table = f'{theme}_{self.year}_qc'
+            source_table = f'{theme}_{self.year}'
             baseline_table = f'{theme}_{self.year}_baseline'
             
             # 1. Check if baseline table exists in BPDAS database
@@ -518,9 +519,9 @@ class PemutakhiranBaseline:
             # Check if baseline table has correct structure (compare column count)
             needs_recreation = False
             if baseline_exists:
-                # Get QC table column count
-                qc_cols = self._get_table_columns(bpdas_cursor, qc_table)
-                qc_col_count = len(qc_cols) + 1  # +1 for geometry (excluded by _get_table_columns)
+                # Get source table column count (from existing/potensi, not QC)
+                source_cols = self._get_table_columns(bpdas_cursor, source_table)
+                source_col_count = len(source_cols) + 1  # +1 for geometry (excluded by _get_table_columns)
                 
                 # Get baseline table column count
                 bpdas_cursor.execute("""
@@ -531,8 +532,8 @@ class PemutakhiranBaseline:
                 """, (baseline_table,))
                 baseline_col_count = bpdas_cursor.fetchone()[0]
                 
-                if qc_col_count != baseline_col_count:
-                    logger.info(f"      ⚠ Table {baseline_table} exists but has wrong structure ({baseline_col_count} vs {qc_col_count} columns), recreating...")
+                if source_col_count != baseline_col_count:
+                    logger.info(f"      ⚠ Table {baseline_table} exists but has wrong structure ({baseline_col_count} vs {source_col_count} columns), recreating...")
                     needs_recreation = True
                 else:
                     logger.info(f"      ✓ Table {baseline_table} already exists with correct structure")
@@ -543,20 +544,24 @@ class PemutakhiranBaseline:
                     bpdas_cursor.execute(f"DROP TABLE IF EXISTS public.{baseline_table} CASCADE")
                     bpdas_cursor.connection.commit()
                 
-                # Create baseline table by copying structure from QC table
-                self._create_baseline_table_from_qc(bpdas_cursor, qc_table, baseline_table)
+                # Create baseline table by copying structure from existing/potensi table
+                self._create_baseline_table_from_source(bpdas_cursor, source_table, baseline_table)
                 logger.info(f"      ✓ Created table {baseline_table} in {bpdas_db}")
             
             # 2. Get QC data that passed all validations
             # Use DISTINCT ON to get the latest record for each geometry (removes duplicates)
             # Use ST_AsBinary to properly handle geometry data
-            # Fetch ALL fields from QC table dynamically
+            # Only fetch fields that exist in baseline table (from source, not QC-specific fields)
             
-            # Get all columns except ogc_fid and geometry
-            columns = self._get_table_columns(bpdas_cursor, qc_table)
+            # Get columns from baseline table (cloned from source table)
+            baseline_columns = self._get_table_columns(bpdas_cursor, baseline_table)
+            baseline_select_columns = [col for col in baseline_columns if col != 'geometry']
             
-            # Build column list for SELECT (excluding ogc_fid and geometry which we handle separately)
-            select_columns = [col for col in columns if col not in ['ogc_fid', 'geometry']]
+            # Get all columns from QC table
+            qc_columns = self._get_table_columns(bpdas_cursor, qc_table)
+            
+            # Only select QC columns that exist in baseline
+            select_columns = [col for col in qc_columns if col in baseline_select_columns and col not in ['ogc_fid', 'geometry']]
             columns_str = ', '.join(select_columns)
             
             # Build query
@@ -574,45 +579,43 @@ class PemutakhiranBaseline:
             bpdas_cursor.execute(query)
             qc_records = bpdas_cursor.fetchall()
             
-            # Find qcstatus column index
+            # Find qcstatus column index (if it exists in selected columns)
+            # Note: qcstatus may not exist if baseline was cloned from existing/potensi without QC fields
             qcstatus_idx = None
             for i, col in enumerate(select_columns, start=1):  # start=1 because index 0 is geometry
                 if col == 'qcstatus':
                     qcstatus_idx = i
                     break
             
+            # If no qcstatus column in baseline, skip QC validation (no QC data to insert)
             if qcstatus_idx is None:
-                logger.error(f"      ✗ qcstatus column not found in {qc_table}")
-                return
-            
-            logger.info(f"      Found {len(qc_records)} unique geometries in {qc_table}")
-            
-            # Filter records with all QC status = valid values
-            valid_records = []
-            
-            for record in qc_records:
-                qcstatus = record[qcstatus_idx]
+                logger.info(f"      ⚠ qcstatus column not found in baseline table, skipping QC data insertion")
+                # Continue to step 5 to insert from source table
+                qc_validated_records = []  # Empty list, skip QC insertion
+            else:
+                logger.info(f"      Found {len(qc_records)} unique geometries in {qc_table}")
                 
-                if self._check_qc_status_all_true(qcstatus):
-                    valid_records.append(record)  # Store full record, not just geometry
+                # Filter records with all QC status = valid values
+                valid_records = []
+                
+                for record in qc_records:
+                    qcstatus = record[qcstatus_idx]
+                    
+                    if self._check_qc_status_all_true(qcstatus):
+                        valid_records.append(record)  # Store full record, not just geometry
+                
+                logger.info(f"      {len(valid_records)} geometries passed all QC validations")
+                
+                qc_validated_records = valid_records  # Store for use after if/else
             
-            logger.info(f"      {len(valid_records)} geometries passed all QC validations")
-            
-            if len(valid_records) == 0:
-                logger.info(f"      No valid QC data to insert")
-                return
-            
-            # 3. Insert into BPDAS baseline table (check for duplicates)
+            # 3. Insert QC validated data into BPDAS baseline table (check for duplicates)
             # Use ST_Force2D to remove Z dimension
             # Build INSERT statement dynamically
             # Find bpdas column index for replacement
             bpdas_col_idx = None
-            qcstatus_col_idx = None
             for i, col in enumerate(select_columns, start=1):
                 if col == 'bpdas':
                     bpdas_col_idx = i
-                if col == 'qcstatus':
-                    qcstatus_col_idx = i
             
             # Column names for INSERT (geometry + all columns except ogc_fid)
             # select_columns already excludes ogc_fid and geometry
@@ -624,47 +627,148 @@ class PemutakhiranBaseline:
             placeholders_str = ', '.join(placeholders)
             
             inserted_bpdas = 0
-            for record in valid_records:
-                geom_binary = record[0]  # First column is always geometry
+            if len(qc_validated_records) > 0:
+                for record in qc_validated_records:
+                    geom_binary = record[0]  # First column is always geometry
+                    
+                    # Check if geometry already exists
+                    bpdas_cursor.execute(f"""
+                        SELECT COUNT(*) FROM public.{baseline_table}
+                        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+                        AND bpdas = %s
+                    """, (psycopg2.Binary(geom_binary), bpdas_db))
+                    
+                    exists = bpdas_cursor.fetchone()[0] > 0
+                    
+                    if not exists:
+                        # Prepare values: replace bpdas with database name
+                        values = []
+                        for i, col in enumerate(select_columns, start=1):
+                            if col == 'bpdas':
+                                values.append(bpdas_db)  # Use database name
+                            else:
+                                values.append(record[i])
+                        
+                        # Insert
+                        bpdas_cursor.execute(f"""
+                            INSERT INTO public.{baseline_table} ({columns_str})
+                            VALUES ({placeholders_str})
+                        """, (psycopg2.Binary(geom_binary), *values))
+                        inserted_bpdas += 1
                 
-                # Check if geometry already exists
+                bpdas_cursor.connection.commit()
+                logger.info(f"      ✓ Inserted {inserted_bpdas} QC validated records into {bpdas_db}.{baseline_table}")
+            else:
+                logger.info(f"      ⚠ No QC validated records to insert into {bpdas_db}.{baseline_table}")
+            
+            # 4. Insert QC validated data into PMN baseline table
+            # Use ST_Force2D to remove Z dimension
+            inserted_pmn = 0
+            if len(qc_validated_records) > 0:
+                for record in qc_validated_records:
+                    geom_binary = record[0]  # First column is always geometry
+                    
+                    # Check if geometry already exists in PMN
+                    pmn_cursor.execute(f"""
+                        SELECT COUNT(*) FROM pmn.{baseline_table}
+                        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+                        AND bpdas = %s
+                    """, (psycopg2.Binary(geom_binary), bpdas_db))
+                    
+                    exists = pmn_cursor.fetchone()[0] > 0
+                    
+                    if not exists:
+                        # Prepare values: replace bpdas with database name
+                        values = []
+                        for i, col in enumerate(select_columns, start=1):
+                            if col == 'bpdas':
+                                values.append(bpdas_db)  # Use database name
+                            else:
+                                values.append(record[i])
+                        
+                        # Insert
+                        pmn_cursor.execute(f"""
+                            INSERT INTO pmn.{baseline_table} ({columns_str})
+                            VALUES ({placeholders_str})
+                        """, (psycopg2.Binary(geom_binary), *values))
+                        inserted_pmn += 1
+                
+                pmn_cursor.connection.commit()
+                logger.info(f"      ✓ Inserted {inserted_pmn} QC validated records into pmn.{baseline_table}")
+            else:
+                logger.info(f"      ⚠ No QC validated records to insert into pmn.{baseline_table}")
+            
+            # Update total QC completed count
+            self.qc_completed += len(qc_validated_records)
+            
+            # 5. Insert remaining data from existing/potensi table (non-QC data)
+            # Only insert geometries that don't exist in baseline yet
+            logger.info(f"    Inserting remaining data from {source_table}...")
+            
+            # Get all columns from source table (excluding ogc_fid)
+            source_columns = self._get_table_columns(bpdas_cursor, source_table)
+            source_select_columns = [col for col in source_columns if col != 'geometry']
+            source_columns_str = ', '.join(source_select_columns)
+            
+            # Get all non-QC data from source table
+            query_source = f"""
+                SELECT DISTINCT ON (ST_AsText(geometry))
+                    ST_AsBinary(geometry) as geom_binary,
+                    {source_columns_str}
+                FROM public.{source_table}
+                WHERE geometry IS NOT NULL
+                ORDER BY ST_AsText(geometry), ogc_fid DESC
+            """
+            
+            bpdas_cursor.execute(query_source)
+            source_records = bpdas_cursor.fetchall()
+            
+            logger.info(f"      Found {len(source_records)} unique geometries in {source_table}")
+            
+            # Build INSERT statement for source data
+            insert_cols = ['geometry'] + source_select_columns
+            cols_str = ', '.join(insert_cols)
+            placeholders = ['ST_Force2D(ST_GeomFromWKB(%s, 4326))'] + ['%s'] * len(source_select_columns)
+            placeholders_str = ', '.join(placeholders)
+            
+            # Insert into BPDAS baseline
+            inserted_source_bpdas = 0
+            for record in source_records:
+                geom_binary = record[0]
+                
+                # Check if geometry already exists in baseline
                 bpdas_cursor.execute(f"""
                     SELECT COUNT(*) FROM public.{baseline_table}
                     WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
-                    AND bpdas = %s
-                """, (psycopg2.Binary(geom_binary), bpdas_db))
+                """, (psycopg2.Binary(geom_binary),))
                 
                 exists = bpdas_cursor.fetchone()[0] > 0
                 
                 if not exists:
-                    # Prepare values: replace bpdas with database name, json.dumps for qcstatus
+                    # Prepare values (replace bpdas with database name if column exists)
                     values = []
-                    for i, col in enumerate(select_columns, start=1):
+                    for i, col in enumerate(source_select_columns, start=1):
                         if col == 'bpdas':
                             values.append(bpdas_db)  # Use database name
-                        elif col == 'qcstatus':
-                            # JSON serialize qcstatus
-                            values.append(json.dumps(record[i]) if record[i] else None)
                         else:
                             values.append(record[i])
                     
                     # Insert
                     bpdas_cursor.execute(f"""
-                        INSERT INTO public.{baseline_table} ({columns_str})
+                        INSERT INTO public.{baseline_table} ({cols_str})
                         VALUES ({placeholders_str})
                     """, (psycopg2.Binary(geom_binary), *values))
-                    inserted_bpdas += 1
+                    inserted_source_bpdas += 1
             
             bpdas_cursor.connection.commit()
-            logger.info(f"      ✓ Inserted {inserted_bpdas} new records into {bpdas_db}.{baseline_table}")
+            logger.info(f"      ✓ Inserted {inserted_source_bpdas} additional records from {source_table} into {bpdas_db}.{baseline_table}")
             
-            # 4. Insert into PMN baseline table (with all fields)
-            # Use ST_Force2D to remove Z dimension
-            inserted_pmn = 0
-            for record in valid_records:
-                geom_binary = record[0]  # First column is always geometry
+            # Insert into PMN baseline
+            inserted_source_pmn = 0
+            for record in source_records:
+                geom_binary = record[0]
                 
-                # Check if geometry already exists in PMN
+                # Check if geometry already exists in PMN baseline
                 pmn_cursor.execute(f"""
                     SELECT COUNT(*) FROM pmn.{baseline_table}
                     WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
@@ -674,29 +778,26 @@ class PemutakhiranBaseline:
                 exists = pmn_cursor.fetchone()[0] > 0
                 
                 if not exists:
-                    # Prepare values: replace bpdas with database name, json.dumps for qcstatus
+                    # Prepare values (replace bpdas with database name if column exists)
                     values = []
-                    for i, col in enumerate(select_columns, start=1):
+                    for i, col in enumerate(source_select_columns, start=1):
                         if col == 'bpdas':
                             values.append(bpdas_db)  # Use database name
-                        elif col == 'qcstatus':
-                            # JSON serialize qcstatus
-                            values.append(json.dumps(record[i]) if record[i] else None)
                         else:
                             values.append(record[i])
                     
                     # Insert
                     pmn_cursor.execute(f"""
-                        INSERT INTO pmn.{baseline_table} ({columns_str})
+                        INSERT INTO pmn.{baseline_table} ({cols_str})
                         VALUES ({placeholders_str})
                     """, (psycopg2.Binary(geom_binary), *values))
-                    inserted_pmn += 1
+                    inserted_source_pmn += 1
             
             pmn_cursor.connection.commit()
-            logger.info(f"      ✓ Inserted {inserted_pmn} new records into pmn.{baseline_table}")
+            logger.info(f"      ✓ Inserted {inserted_source_pmn} additional records from {source_table} into pmn.{baseline_table}")
             
-            # Update total QC completed count
-            self.qc_completed += len(valid_records)
+            # Update QC completed to include source data
+            self.qc_completed += inserted_source_bpdas
             
         except Exception as e:
             logger.error(f"      ✗ Error processing {theme} baseline: {e}")
