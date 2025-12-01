@@ -703,3 +703,2734 @@ LINE 2: ...tglskkws, lskkws, kawasan, konservasi, kab, prov, qcstatus, ...
 2025-11-26 13:18:27,932 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
 2025-11-26 13:18:27,933 - INFO -     Inserting remaining data from existing_2025...
 2025-11-26 13:18:30,215 - INFO -       Found 2168 unique geometries in existing_2025
+2025-11-26 13:20:38,895 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into agamkuantan.existing_2025_baseline
+2025-11-26 13:22:28,367 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into pmn.existing_2025_baseline
+2025-11-26 13:22:28,378 - INFO -     Processing potensi baseline...
+2025-11-26 13:22:28,550 - INFO -       ✓ Created table potensi_2025_baseline in agamkuantan
+2025-11-26 13:22:28,824 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:22:28,824 - INFO -       ⚠ No QC validated records to insert into agamkuantan.potensi_2025_baseline
+2025-11-26 13:22:28,824 - INFO -       ⚠ No QC validated records to insert into pmn.potensi_2025_baseline
+2025-11-26 13:22:28,824 - INFO -     Inserting remaining data from potensi_2025...
+2025-11-26 13:22:28,944 - INFO -       Found 127 unique geometries in potensi_2025
+2025-11-26 13:22:35,109 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into agamkuantan.potensi_2025_baseline
+2025-11-26 13:22:41,066 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into pmn.potensi_2025_baseline
+2025-11-26 13:22:41,318 - INFO - Progress updated: 12% - QC: 2295, BPDAS: 1
+2025-11-26 13:22:41,319 - INFO -   ✓ agamkuantan processed successfully
+2025-11-26 13:22:41,319 - INFO - 
+[2/34] Processing BPDAS: akemalamo
+2025-11-26 13:22:41,497 - INFO -     Processing existing baseline...
+2025-11-26 13:22:41,662 - INFO -       ✓ Created table existing_2025_baseline in akemalamo
+2025-11-26 13:22:41,859 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:22:41,859 - INFO -       ⚠ No QC validated records to insert into akemalamo.existing_2025_baseline
+2025-11-26 13:22:41,859 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 13:22:41,859 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 13:22:48,572 - INFO -       Found 7719 unique geometries in existing_2025
+2025-11-26 13:31:46,453 - INFO -       ✓ Inserted 7719 additional records from existing_2025 into akemalamo.existing_2025_baseline
+2025-11-26 13:32:04,839 - ERROR -       ✗ Error processing existing baseline: could not receive data from server: Operation timed out
+
+2025-11-26 13:32:04,857 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: could not receive data from server: Operation timed out
+
+
+2025-11-26 13:32:04,857 - WARNING -   ✗ Cannot connect to akemalamo: could not receive data from server: Operation timed out
+
+2025-11-26 13:32:04,890 - INFO - 
+[3/34] Processing BPDAS: asahanbarumun
+2025-11-26 13:32:05,095 - INFO -     Processing existing baseline...
+2025-11-26 13:32:05,546 - INFO -       ✓ Created table existing_2025_baseline in asahanbarumun
+2025-11-26 13:32:05,704 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:32:05,704 - INFO -       ⚠ No QC validated records to insert into asahanbarumun.existing_2025_baseline
+2025-11-26 13:32:05,705 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 13:32:05,705 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 13:32:13,592 - INFO -       Found 2971 unique geometries in existing_2025
+2025-11-26 13:34:39,499 - INFO -       ✓ Inserted 2971 additional records from existing_2025 into asahanbarumun.existing_2025_baseline
+2025-11-26 13:34:39,502 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 13:34:39,507 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:34:39,507 - ERROR -   ✗ Error processing asahanbarumun: cursor already closed
+2025-11-26 13:34:39,509 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:34:39,531 - INFO - 
+[4/34] Processing BPDAS: barito
+2025-11-26 13:34:39,739 - INFO -     Processing existing baseline...
+2025-11-26 13:34:39,915 - INFO -       ✓ Created table existing_2025_baseline in barito
+2025-11-26 13:34:40,140 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:34:40,141 - INFO -       ⚠ No QC validated records to insert into barito.existing_2025_baseline
+2025-11-26 13:34:40,141 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 13:34:40,141 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 13:34:45,047 - INFO -       Found 2561 unique geometries in existing_2025
+2025-11-26 13:37:09,647 - INFO -       ✓ Inserted 2561 additional records from existing_2025 into barito.existing_2025_baseline
+2025-11-26 13:37:09,655 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 13:37:09,661 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:37:09,661 - ERROR -   ✗ Error processing barito: cursor already closed
+2025-11-26 13:37:09,663 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:37:09,674 - INFO - 
+[5/34] Processing BPDAS: batanghari
+2025-11-26 13:37:09,883 - INFO -     Processing existing baseline...
+2025-11-26 13:37:10,060 - INFO -       ✓ Created table existing_2025_baseline in batanghari
+2025-11-26 13:37:10,264 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:37:10,265 - INFO -       ⚠ No QC validated records to insert into batanghari.existing_2025_baseline
+2025-11-26 13:37:10,265 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 13:37:10,265 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 13:37:11,983 - INFO -       Found 623 unique geometries in existing_2025
+2025-11-26 13:37:51,653 - INFO -       ✓ Inserted 623 additional records from existing_2025 into batanghari.existing_2025_baseline
+2025-11-26 13:37:51,654 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 13:37:51,656 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:37:51,657 - ERROR -   ✗ Error processing batanghari: cursor already closed
+2025-11-26 13:37:51,658 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 13:37:51,664 - INFO - 
+[6/34] Processing BPDAS: baturusacerucuk
+2025-11-26 13:37:51,837 - INFO -     Processing existing baseline...
+2025-11-26 13:37:53,073 - INFO -       ✓ Created table existing_2025_baseline in baturusacerucuk
+2025-11-26 13:37:53,705 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 13:37:53,707 - INFO -       ⚠ No QC validated records to insert into baturusacerucuk.existing_2025_baseline
+2025-11-26 13:37:53,707 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 13:37:53,707 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 13:37:59,889 - INFO -       Found 2275 unique geometries in existing_2025
+2025-11-26 14:58:26,427 - INFO - ================================================================================
+2025-11-26 14:58:26,427 - INFO - STARTING PEMUTAKHIRAN BASELINE PROCESS
+2025-11-26 14:58:26,427 - INFO - State ID: 8
+2025-11-26 14:58:26,427 - INFO - Test Mode: False
+2025-11-26 14:58:26,427 - INFO - ================================================================================
+2025-11-26 14:58:26,427 - INFO - ============================================================
+2025-11-26 14:58:26,427 - INFO - Step 1: Getting year and BPDAS list...
+2025-11-26 14:58:26,427 - INFO - ============================================================
+2025-11-26 14:58:26,632 - INFO - Year: 2025
+2025-11-26 14:58:26,632 - INFO - Total BPDAS to process: 34
+2025-11-26 14:58:26,853 - INFO - Progress updated: 5% - QC: 0, BPDAS: 0
+2025-11-26 14:58:26,853 - INFO - ============================================================
+2025-11-26 14:58:26,853 - INFO - Step 2: Creating baseline tables in pmn schema...
+2025-11-26 14:58:26,854 - INFO - ============================================================
+2025-11-26 14:58:27,171 - INFO - Using agamkuantan as reference for table structure
+2025-11-26 14:58:27,547 - INFO -   ✓ Table pmn.existing_2025_baseline created/verified
+2025-11-26 14:58:27,661 - INFO -   ✓ Table pmn.potensi_2025_baseline created/verified
+2025-11-26 14:58:28,012 - INFO - Progress updated: 10% - QC: 0, BPDAS: 0
+2025-11-26 14:58:28,314 - INFO - Step 2 completed: PMN baseline tables created
+2025-11-26 14:58:28,549 - INFO - ============================================================
+2025-11-26 14:58:28,549 - INFO - Step 3: Processing BPDAS databases...
+2025-11-26 14:58:28,550 - INFO - ============================================================
+2025-11-26 14:58:28,677 - INFO - 
+[1/34] Processing BPDAS: agamkuantan
+2025-11-26 14:58:28,866 - INFO -     Processing existing baseline...
+2025-11-26 14:58:29,077 - INFO -       ✓ Created table existing_2025_baseline in agamkuantan
+2025-11-26 14:58:29,293 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 14:58:29,293 - INFO -       ⚠ No QC validated records to insert into agamkuantan.existing_2025_baseline
+2025-11-26 14:58:29,293 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 14:58:29,293 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 14:58:32,459 - INFO -       Found 2168 unique geometries in existing_2025
+2025-11-26 15:00:16,306 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into agamkuantan.existing_2025_baseline
+2025-11-26 15:02:03,806 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into pmn.existing_2025_baseline
+2025-11-26 15:02:03,820 - INFO -     Processing potensi baseline...
+2025-11-26 15:02:03,972 - INFO -       ✓ Created table potensi_2025_baseline in agamkuantan
+2025-11-26 15:02:04,193 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:02:04,193 - INFO -       ⚠ No QC validated records to insert into agamkuantan.potensi_2025_baseline
+2025-11-26 15:02:04,193 - INFO -       ⚠ No QC validated records to insert into pmn.potensi_2025_baseline
+2025-11-26 15:02:04,193 - INFO -     Inserting remaining data from potensi_2025...
+2025-11-26 15:02:04,322 - INFO -       Found 127 unique geometries in potensi_2025
+2025-11-26 15:02:09,878 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into agamkuantan.potensi_2025_baseline
+2025-11-26 15:02:15,907 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into pmn.potensi_2025_baseline
+2025-11-26 15:02:16,125 - INFO - Progress updated: 12% - QC: 2295, BPDAS: 1
+2025-11-26 15:02:16,126 - INFO -   ✓ agamkuantan processed successfully
+2025-11-26 15:02:16,126 - INFO - 
+[2/34] Processing BPDAS: akemalamo
+2025-11-26 15:02:16,301 - INFO -     Processing existing baseline...
+2025-11-26 15:02:16,467 - INFO -       ✓ Created table existing_2025_baseline in akemalamo
+2025-11-26 15:02:16,693 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:02:16,694 - INFO -       ⚠ No QC validated records to insert into akemalamo.existing_2025_baseline
+2025-11-26 15:02:16,694 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:02:16,694 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:02:23,710 - INFO -       Found 7719 unique geometries in existing_2025
+2025-11-26 15:11:03,516 - INFO -       ✓ Inserted 7719 additional records from existing_2025 into akemalamo.existing_2025_baseline
+2025-11-26 15:11:21,812 - ERROR -       ✗ Error processing existing baseline: could not receive data from server: Operation timed out
+
+2025-11-26 15:11:21,832 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: could not receive data from server: Operation timed out
+
+
+2025-11-26 15:11:21,833 - WARNING -   ✗ Cannot connect to akemalamo: could not receive data from server: Operation timed out
+
+2025-11-26 15:11:21,867 - INFO - 
+[3/34] Processing BPDAS: asahanbarumun
+2025-11-26 15:11:22,170 - INFO -     Processing existing baseline...
+2025-11-26 15:11:22,349 - INFO -       ✓ Created table existing_2025_baseline in asahanbarumun
+2025-11-26 15:11:22,468 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:11:22,468 - INFO -       ⚠ No QC validated records to insert into asahanbarumun.existing_2025_baseline
+2025-11-26 15:11:22,468 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:11:22,469 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:11:24,561 - INFO -       Found 2971 unique geometries in existing_2025
+2025-11-26 15:13:51,539 - INFO -       ✓ Inserted 2971 additional records from existing_2025 into asahanbarumun.existing_2025_baseline
+2025-11-26 15:13:51,543 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:13:51,553 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:13:51,554 - ERROR -   ✗ Error processing asahanbarumun: cursor already closed
+2025-11-26 15:13:51,554 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:13:51,562 - INFO - 
+[4/34] Processing BPDAS: barito
+2025-11-26 15:13:51,783 - INFO -     Processing existing baseline...
+2025-11-26 15:13:51,963 - INFO -       ✓ Created table existing_2025_baseline in barito
+2025-11-26 15:13:52,173 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:13:52,174 - INFO -       ⚠ No QC validated records to insert into barito.existing_2025_baseline
+2025-11-26 15:13:52,174 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:13:52,174 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:13:54,877 - INFO -       Found 2561 unique geometries in existing_2025
+2025-11-26 15:16:02,965 - INFO -       ✓ Inserted 2561 additional records from existing_2025 into barito.existing_2025_baseline
+2025-11-26 15:16:02,967 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:16:02,974 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:16:02,974 - ERROR -   ✗ Error processing barito: cursor already closed
+2025-11-26 15:16:02,974 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:16:02,979 - INFO - 
+[5/34] Processing BPDAS: batanghari
+2025-11-26 15:16:03,178 - INFO -     Processing existing baseline...
+2025-11-26 15:16:03,341 - INFO -       ✓ Created table existing_2025_baseline in batanghari
+2025-11-26 15:16:03,504 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:16:03,504 - INFO -       ⚠ No QC validated records to insert into batanghari.existing_2025_baseline
+2025-11-26 15:16:03,504 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:16:03,504 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:16:04,970 - INFO -       Found 623 unique geometries in existing_2025
+2025-11-26 15:16:38,199 - INFO -       ✓ Inserted 623 additional records from existing_2025 into batanghari.existing_2025_baseline
+2025-11-26 15:16:38,203 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:16:38,209 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:16:38,210 - ERROR -   ✗ Error processing batanghari: cursor already closed
+2025-11-26 15:16:38,210 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:16:38,223 - INFO - 
+[6/34] Processing BPDAS: baturusacerucuk
+2025-11-26 15:16:38,448 - INFO -     Processing existing baseline...
+2025-11-26 15:16:38,612 - INFO -       ✓ Created table existing_2025_baseline in baturusacerucuk
+2025-11-26 15:16:38,865 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:16:38,866 - INFO -       ⚠ No QC validated records to insert into baturusacerucuk.existing_2025_baseline
+2025-11-26 15:16:38,866 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:16:38,866 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:16:43,604 - INFO -       Found 2275 unique geometries in existing_2025
+2025-11-26 15:18:38,772 - INFO -       ✓ Inserted 2275 additional records from existing_2025 into baturusacerucuk.existing_2025_baseline
+2025-11-26 15:18:38,776 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:18:38,787 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:18:38,787 - ERROR -   ✗ Error processing baturusacerucuk: cursor already closed
+2025-11-26 15:18:38,789 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:18:38,798 - INFO - 
+[7/34] Processing BPDAS: benainnoelmina
+2025-11-26 15:18:39,002 - INFO -     Processing existing baseline...
+2025-11-26 15:18:39,190 - INFO -       ✓ Created table existing_2025_baseline in benainnoelmina
+2025-11-26 15:18:39,449 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:18:39,449 - INFO -       ⚠ No QC validated records to insert into benainnoelmina.existing_2025_baseline
+2025-11-26 15:18:39,449 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:18:39,449 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:18:58,234 - INFO -       Found 10987 unique geometries in existing_2025
+2025-11-26 15:34:17,354 - INFO -       ✓ Inserted 10987 additional records from existing_2025 into benainnoelmina.existing_2025_baseline
+2025-11-26 15:34:17,365 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:34:17,383 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:34:17,384 - ERROR -   ✗ Error processing benainnoelmina: cursor already closed
+2025-11-26 15:34:17,385 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:34:17,660 - INFO - 
+[8/34] Processing BPDAS: bonelimboto
+2025-11-26 15:34:17,851 - INFO -     Processing existing baseline...
+2025-11-26 15:34:18,023 - INFO -       ✓ Created table existing_2025_baseline in bonelimboto
+2025-11-26 15:34:18,148 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:34:18,149 - INFO -       ⚠ No QC validated records to insert into bonelimboto.existing_2025_baseline
+2025-11-26 15:34:18,149 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:34:18,149 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:34:19,353 - INFO -       Found 1833 unique geometries in existing_2025
+2025-11-26 15:35:47,366 - INFO -       ✓ Inserted 1833 additional records from existing_2025 into bonelimboto.existing_2025_baseline
+2025-11-26 15:35:47,370 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:35:47,376 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:35:47,376 - ERROR -   ✗ Error processing bonelimboto: cursor already closed
+2025-11-26 15:35:47,377 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:35:47,393 - INFO - 
+[9/34] Processing BPDAS: brantassampean
+2025-11-26 15:35:47,611 - INFO -     Processing existing baseline...
+2025-11-26 15:35:47,827 - INFO -       ✓ Created table existing_2025_baseline in brantassampean
+2025-11-26 15:35:47,980 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:35:47,982 - INFO -       ⚠ No QC validated records to insert into brantassampean.existing_2025_baseline
+2025-11-26 15:35:47,988 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:35:47,989 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:35:49,783 - INFO -       Found 4314 unique geometries in existing_2025
+2025-11-26 15:39:28,560 - INFO -       ✓ Inserted 4314 additional records from existing_2025 into brantassampean.existing_2025_baseline
+2025-11-26 15:39:28,563 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:39:28,573 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:39:28,573 - ERROR -   ✗ Error processing brantassampean: cursor already closed
+2025-11-26 15:39:28,574 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:39:28,614 - INFO - 
+[10/34] Processing BPDAS: cimanukcitanduy
+2025-11-26 15:39:28,800 - INFO -     Processing existing baseline...
+2025-11-26 15:39:28,980 - INFO -       ✓ Created table existing_2025_baseline in cimanukcitanduy
+2025-11-26 15:39:29,635 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:39:29,635 - INFO -       ⚠ No QC validated records to insert into cimanukcitanduy.existing_2025_baseline
+2025-11-26 15:39:29,635 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:39:29,635 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:39:30,181 - INFO -       Found 1212 unique geometries in existing_2025
+2025-11-26 15:40:29,833 - INFO -       ✓ Inserted 1212 additional records from existing_2025 into cimanukcitanduy.existing_2025_baseline
+2025-11-26 15:40:29,838 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:40:29,844 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:40:29,845 - ERROR -   ✗ Error processing cimanukcitanduy: cursor already closed
+2025-11-26 15:40:29,847 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:40:29,852 - INFO - 
+[11/34] Processing BPDAS: citarumciliwung
+2025-11-26 15:40:30,034 - INFO -     Processing existing baseline...
+2025-11-26 15:40:30,204 - INFO -       ✓ Created table existing_2025_baseline in citarumciliwung
+2025-11-26 15:40:30,407 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:40:30,407 - INFO -       ⚠ No QC validated records to insert into citarumciliwung.existing_2025_baseline
+2025-11-26 15:40:30,407 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:40:30,407 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:40:31,045 - INFO -       Found 2646 unique geometries in existing_2025
+2025-11-26 15:42:42,504 - INFO -       ✓ Inserted 2646 additional records from existing_2025 into citarumciliwung.existing_2025_baseline
+2025-11-26 15:42:42,509 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:42:42,517 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:42:42,517 - ERROR -   ✗ Error processing citarumciliwung: cursor already closed
+2025-11-26 15:42:42,519 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:42:42,530 - INFO - 
+[12/34] Processing BPDAS: dodokanmoyosari
+2025-11-26 15:42:42,729 - INFO -     Processing existing baseline...
+2025-11-26 15:42:42,917 - INFO -       ✓ Created table existing_2025_baseline in dodokanmoyosari
+2025-11-26 15:42:43,039 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:42:43,039 - INFO -       ⚠ No QC validated records to insert into dodokanmoyosari.existing_2025_baseline
+2025-11-26 15:42:43,039 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:42:43,039 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:42:46,683 - INFO -       Found 6495 unique geometries in existing_2025
+2025-11-26 15:49:31,883 - INFO -       ✓ Inserted 6495 additional records from existing_2025 into dodokanmoyosari.existing_2025_baseline
+2025-11-26 15:49:31,891 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 15:49:31,904 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:49:31,904 - ERROR -   ✗ Error processing dodokanmoyosari: cursor already closed
+2025-11-26 15:49:31,906 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 15:49:32,059 - INFO - 
+[13/34] Processing BPDAS: indragirirokan
+2025-11-26 15:49:32,276 - INFO -     Processing existing baseline...
+2025-11-26 15:49:32,469 - INFO -       ✓ Created table existing_2025_baseline in indragirirokan
+2025-11-26 15:49:33,000 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 15:49:33,000 - INFO -       ⚠ No QC validated records to insert into indragirirokan.existing_2025_baseline
+2025-11-26 15:49:33,000 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 15:49:33,000 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 15:49:41,975 - INFO -       Found 7931 unique geometries in existing_2025
+2025-11-26 16:00:02,140 - INFO -       ✓ Inserted 7931 additional records from existing_2025 into indragirirokan.existing_2025_baseline
+2025-11-26 16:00:02,151 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:00:02,165 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:00:02,165 - ERROR -   ✗ Error processing indragirirokan: cursor already closed
+2025-11-26 16:00:02,166 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:00:02,382 - INFO - 
+[14/34] Processing BPDAS: jeneberangsaddang
+2025-11-26 16:00:02,590 - INFO -     Processing existing baseline...
+2025-11-26 16:00:02,767 - INFO -       ✓ Created table existing_2025_baseline in jeneberangsaddang
+2025-11-26 16:00:02,912 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:00:02,912 - INFO -       ⚠ No QC validated records to insert into jeneberangsaddang.existing_2025_baseline
+2025-11-26 16:00:02,912 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:00:02,913 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:00:10,117 - INFO -       Found 8519 unique geometries in existing_2025
+2025-11-26 16:11:47,157 - INFO -       ✓ Inserted 8519 additional records from existing_2025 into jeneberangsaddang.existing_2025_baseline
+2025-11-26 16:11:47,166 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:11:47,178 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:11:47,178 - ERROR -   ✗ Error processing jeneberangsaddang: cursor already closed
+2025-11-26 16:11:47,180 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:11:47,352 - INFO - 
+[15/34] Processing BPDAS: kahayan
+2025-11-26 16:11:47,697 - INFO -     Processing existing baseline...
+2025-11-26 16:11:47,905 - INFO -       ✓ Created table existing_2025_baseline in kahayan
+2025-11-26 16:11:48,084 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:11:48,084 - INFO -       ⚠ No QC validated records to insert into kahayan.existing_2025_baseline
+2025-11-26 16:11:48,084 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:11:48,084 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:11:48,877 - INFO -       Found 1306 unique geometries in existing_2025
+2025-11-26 16:12:53,526 - INFO -       ✓ Inserted 1306 additional records from existing_2025 into kahayan.existing_2025_baseline
+2025-11-26 16:12:53,532 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:12:53,538 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:12:53,538 - ERROR -   ✗ Error processing kahayan: cursor already closed
+2025-11-26 16:12:53,540 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:12:53,554 - INFO - 
+[16/34] Processing BPDAS: kapuas
+2025-11-26 16:12:53,745 - INFO -     Processing existing baseline...
+2025-11-26 16:12:53,937 - INFO -       ✓ Created table existing_2025_baseline in kapuas
+2025-11-26 16:12:54,054 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:12:54,054 - INFO -       ⚠ No QC validated records to insert into kapuas.existing_2025_baseline
+2025-11-26 16:12:54,054 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:12:54,055 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:12:56,657 - INFO -       Found 2449 unique geometries in existing_2025
+2025-11-26 16:15:04,500 - INFO -       ✓ Inserted 2449 additional records from existing_2025 into kapuas.existing_2025_baseline
+2025-11-26 16:15:04,505 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:15:04,513 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:15:04,514 - ERROR -   ✗ Error processing kapuas: cursor already closed
+2025-11-26 16:15:04,515 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:15:04,573 - INFO - 
+[17/34] Processing BPDAS: karama
+2025-11-26 16:15:04,787 - INFO -     Processing existing baseline...
+2025-11-26 16:15:04,998 - INFO -       ✓ Created table existing_2025_baseline in karama
+2025-11-26 16:15:05,183 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:15:05,183 - INFO -       ⚠ No QC validated records to insert into karama.existing_2025_baseline
+2025-11-26 16:15:05,183 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:15:05,184 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:15:07,839 - INFO -       Found 1993 unique geometries in existing_2025
+2025-11-26 16:16:50,345 - INFO -       ✓ Inserted 1993 additional records from existing_2025 into karama.existing_2025_baseline
+2025-11-26 16:16:50,348 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:16:50,350 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:16:50,350 - ERROR -   ✗ Error processing karama: cursor already closed
+2025-11-26 16:16:50,352 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:16:50,369 - INFO - 
+[18/34] Processing BPDAS: ketahun
+2025-11-26 16:16:50,529 - INFO -     Processing existing baseline...
+2025-11-26 16:16:50,693 - INFO -       ✓ Created table existing_2025_baseline in ketahun
+2025-11-26 16:16:50,802 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:16:50,803 - INFO -       ⚠ No QC validated records to insert into ketahun.existing_2025_baseline
+2025-11-26 16:16:50,803 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:16:50,803 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:16:51,102 - INFO -       Found 378 unique geometries in existing_2025
+2025-11-26 16:17:09,307 - INFO -       ✓ Inserted 378 additional records from existing_2025 into ketahun.existing_2025_baseline
+2025-11-26 16:17:09,312 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:17:09,315 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:17:09,315 - ERROR -   ✗ Error processing ketahun: cursor already closed
+2025-11-26 16:17:09,316 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:17:09,318 - INFO - 
+[19/34] Processing BPDAS: konaweha
+2025-11-26 16:17:09,493 - INFO -     Processing existing baseline...
+2025-11-26 16:17:09,677 - INFO -       ✓ Created table existing_2025_baseline in konaweha
+2025-11-26 16:17:09,798 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:17:09,799 - INFO -       ⚠ No QC validated records to insert into konaweha.existing_2025_baseline
+2025-11-26 16:17:09,803 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:17:09,805 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:17:14,645 - INFO -       Found 8845 unique geometries in existing_2025
+2025-11-26 16:27:39,100 - INFO -       ✓ Inserted 8845 additional records from existing_2025 into konaweha.existing_2025_baseline
+2025-11-26 16:27:39,106 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:27:39,120 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:27:39,121 - ERROR -   ✗ Error processing konaweha: cursor already closed
+2025-11-26 16:27:39,122 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:27:39,193 - INFO - 
+[20/34] Processing BPDAS: kruengaceh
+2025-11-26 16:27:39,363 - INFO -     Processing existing baseline...
+2025-11-26 16:27:39,543 - INFO -       ✓ Created table existing_2025_baseline in kruengaceh
+2025-11-26 16:27:39,735 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:27:39,740 - INFO -       ⚠ No QC validated records to insert into kruengaceh.existing_2025_baseline
+2025-11-26 16:27:39,740 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:27:39,741 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:27:46,590 - INFO -       Found 9269 unique geometries in existing_2025
+2025-11-26 16:42:11,807 - INFO -       ✓ Inserted 9269 additional records from existing_2025 into kruengaceh.existing_2025_baseline
+2025-11-26 16:42:11,815 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 16:42:11,821 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:42:11,821 - ERROR -   ✗ Error processing kruengaceh: cursor already closed
+2025-11-26 16:42:11,822 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 16:42:11,879 - INFO - 
+[21/34] Processing BPDAS: mahakamberau
+2025-11-26 16:42:12,222 - INFO -     Processing existing baseline...
+2025-11-26 16:42:12,413 - INFO -       ✓ Created table existing_2025_baseline in mahakamberau
+2025-11-26 16:42:12,845 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 16:42:12,845 - INFO -       ⚠ No QC validated records to insert into mahakamberau.existing_2025_baseline
+2025-11-26 16:42:12,845 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 16:42:12,846 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 16:42:25,583 - INFO -       Found 16494 unique geometries in existing_2025
+2025-11-26 17:07:56,401 - INFO -       ✓ Inserted 16494 additional records from existing_2025 into mahakamberau.existing_2025_baseline
+2025-11-26 17:07:56,415 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:07:56,427 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:07:56,428 - ERROR -   ✗ Error processing mahakamberau: cursor already closed
+2025-11-26 17:07:56,429 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:07:56,662 - INFO - 
+[22/34] Processing BPDAS: memberamo
+2025-11-26 17:07:56,966 - INFO -     Processing existing baseline...
+2025-11-26 17:07:57,166 - INFO -       ✓ Created table existing_2025_baseline in memberamo
+2025-11-26 17:07:57,938 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:07:57,939 - INFO -       ⚠ No QC validated records to insert into memberamo.existing_2025_baseline
+2025-11-26 17:07:57,939 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:07:57,939 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:08:07,302 - INFO -       Found 3824 unique geometries in existing_2025
+2025-11-26 17:12:27,325 - INFO -       ✓ Inserted 3824 additional records from existing_2025 into memberamo.existing_2025_baseline
+2025-11-26 17:12:27,336 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:12:27,349 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:12:27,349 - ERROR -   ✗ Error processing memberamo: cursor already closed
+2025-11-26 17:12:27,350 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:12:27,551 - INFO - 
+[23/34] Processing BPDAS: musi
+2025-11-26 17:12:27,788 - INFO -     Processing existing baseline...
+2025-11-26 17:12:27,982 - INFO -       ✓ Created table existing_2025_baseline in musi
+2025-11-26 17:12:28,114 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:12:28,114 - INFO -       ⚠ No QC validated records to insert into musi.existing_2025_baseline
+2025-11-26 17:12:28,114 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:12:28,114 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:12:29,815 - INFO -       Found 926 unique geometries in existing_2025
+2025-11-26 17:13:24,556 - INFO -       ✓ Inserted 926 additional records from existing_2025 into musi.existing_2025_baseline
+2025-11-26 17:13:24,561 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:13:24,569 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:13:24,569 - ERROR -   ✗ Error processing musi: cursor already closed
+2025-11-26 17:13:24,571 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/./pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:13:24,578 - INFO - 
+[24/34] Processing BPDAS: paluposo
+2025-11-26 17:13:24,769 - INFO -     Processing existing baseline...
+2025-11-26 17:13:24,934 - INFO -       ✓ Created table existing_2025_baseline in paluposo
+2025-11-26 17:13:25,274 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:13:25,275 - INFO -       ⚠ No QC validated records to insert into paluposo.existing_2025_baseline
+2025-11-26 17:13:25,275 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:13:25,275 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:13:49,847 - INFO -       Found 11047 unique geometries in existing_2025
+2025-11-26 17:25:53,522 - INFO - ================================================================================
+2025-11-26 17:25:53,522 - INFO - STARTING PEMUTAKHIRAN BASELINE PROCESS
+2025-11-26 17:25:53,522 - INFO - State ID: 8
+2025-11-26 17:25:53,522 - INFO - Test Mode: False
+2025-11-26 17:25:53,522 - INFO - ================================================================================
+2025-11-26 17:25:53,522 - INFO - ============================================================
+2025-11-26 17:25:53,522 - INFO - Step 1: Getting year and BPDAS list...
+2025-11-26 17:25:53,522 - INFO - ============================================================
+2025-11-26 17:25:53,788 - INFO - Year: 2025
+2025-11-26 17:25:53,788 - INFO - Total BPDAS to process: 34
+2025-11-26 17:25:54,006 - INFO - Progress updated: 5% - QC: 0, BPDAS: 0
+2025-11-26 17:25:54,007 - INFO - ============================================================
+2025-11-26 17:25:54,007 - INFO - Step 2: Creating baseline tables in pmn schema...
+2025-11-26 17:25:54,007 - INFO - ============================================================
+2025-11-26 17:25:54,320 - INFO - Using agamkuantan as reference for table structure
+2025-11-26 17:25:54,637 - INFO -   ✓ Table pmn.existing_2025_baseline created/verified
+2025-11-26 17:25:54,747 - INFO -   ✓ Table pmn.potensi_2025_baseline created/verified
+2025-11-26 17:25:54,999 - INFO - Progress updated: 10% - QC: 0, BPDAS: 0
+2025-11-26 17:25:55,000 - INFO - Step 2 completed: PMN baseline tables created
+2025-11-26 17:25:55,000 - INFO - ============================================================
+2025-11-26 17:25:55,000 - INFO - Step 3: Processing BPDAS databases...
+2025-11-26 17:25:55,000 - INFO - ============================================================
+2025-11-26 17:25:55,124 - INFO - 
+[1/34] Processing BPDAS: agamkuantan
+2025-11-26 17:25:55,311 - INFO -     Processing existing baseline...
+2025-11-26 17:25:55,450 - INFO -       ✓ Created table existing_2025_baseline in agamkuantan
+2025-11-26 17:25:55,608 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:25:55,608 - INFO -       ⚠ No QC validated records to insert into agamkuantan.existing_2025_baseline
+2025-11-26 17:25:55,608 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:25:55,608 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:25:57,179 - INFO -       Found 2168 unique geometries in existing_2025
+2025-11-26 17:28:10,617 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into agamkuantan.existing_2025_baseline
+2025-11-26 17:30:33,552 - INFO -       ✓ Inserted 2168 additional records from existing_2025 into pmn.existing_2025_baseline
+2025-11-26 17:30:33,577 - INFO -     Processing potensi baseline...
+2025-11-26 17:30:33,779 - INFO -       ✓ Created table potensi_2025_baseline in agamkuantan
+2025-11-26 17:30:34,067 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:30:34,067 - INFO -       ⚠ No QC validated records to insert into agamkuantan.potensi_2025_baseline
+2025-11-26 17:30:34,067 - INFO -       ⚠ No QC validated records to insert into pmn.potensi_2025_baseline
+2025-11-26 17:30:34,067 - INFO -     Inserting remaining data from potensi_2025...
+2025-11-26 17:30:34,271 - INFO -       Found 127 unique geometries in potensi_2025
+2025-11-26 17:30:40,558 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into agamkuantan.potensi_2025_baseline
+2025-11-26 17:30:46,960 - INFO -       ✓ Inserted 127 additional records from potensi_2025 into pmn.potensi_2025_baseline
+2025-11-26 17:30:47,234 - INFO - Progress updated: 12% - QC: 2295, BPDAS: 1
+2025-11-26 17:30:47,234 - INFO -   ✓ agamkuantan processed successfully
+2025-11-26 17:30:47,235 - INFO - 
+[2/34] Processing BPDAS: akemalamo
+2025-11-26 17:30:47,549 - INFO -     Processing existing baseline...
+2025-11-26 17:30:47,716 - INFO -       ✓ Created table existing_2025_baseline in akemalamo
+2025-11-26 17:30:47,914 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:30:47,914 - INFO -       ⚠ No QC validated records to insert into akemalamo.existing_2025_baseline
+2025-11-26 17:30:47,915 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:30:47,915 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:30:54,309 - INFO -       Found 7719 unique geometries in existing_2025
+2025-11-26 17:40:03,190 - INFO -       ✓ Inserted 7719 additional records from existing_2025 into akemalamo.existing_2025_baseline
+2025-11-26 17:40:21,217 - ERROR -       ✗ Error processing existing baseline: could not receive data from server: Operation timed out
+
+2025-11-26 17:40:21,249 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: could not receive data from server: Operation timed out
+
+
+2025-11-26 17:40:21,249 - WARNING -   ✗ Cannot connect to akemalamo: could not receive data from server: Operation timed out
+
+2025-11-26 17:40:21,344 - INFO - 
+[3/34] Processing BPDAS: asahanbarumun
+2025-11-26 17:40:21,532 - INFO -     Processing existing baseline...
+2025-11-26 17:40:21,675 - INFO -       ✓ Created table existing_2025_baseline in asahanbarumun
+2025-11-26 17:40:21,787 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:40:21,787 - INFO -       ⚠ No QC validated records to insert into asahanbarumun.existing_2025_baseline
+2025-11-26 17:40:21,787 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:40:21,787 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:40:23,327 - INFO -       Found 2971 unique geometries in existing_2025
+2025-11-26 17:42:44,716 - INFO -       ✓ Inserted 2971 additional records from existing_2025 into asahanbarumun.existing_2025_baseline
+2025-11-26 17:42:44,720 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:42:44,728 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:42:44,728 - ERROR -   ✗ Error processing asahanbarumun: cursor already closed
+2025-11-26 17:42:44,729 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:42:44,733 - INFO - 
+[4/34] Processing BPDAS: barito
+2025-11-26 17:42:44,920 - INFO -     Processing existing baseline...
+2025-11-26 17:42:45,062 - INFO -       ✓ Created table existing_2025_baseline in barito
+2025-11-26 17:42:45,243 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:42:45,243 - INFO -       ⚠ No QC validated records to insert into barito.existing_2025_baseline
+2025-11-26 17:42:45,244 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:42:45,244 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:42:46,973 - INFO -       Found 2561 unique geometries in existing_2025
+2025-11-26 17:44:53,037 - INFO -       ✓ Inserted 2561 additional records from existing_2025 into barito.existing_2025_baseline
+2025-11-26 17:44:53,043 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:44:53,050 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:44:53,050 - ERROR -   ✗ Error processing barito: cursor already closed
+2025-11-26 17:44:53,052 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:44:53,068 - INFO - 
+[5/34] Processing BPDAS: batanghari
+2025-11-26 17:44:53,253 - INFO -     Processing existing baseline...
+2025-11-26 17:44:53,397 - INFO -       ✓ Created table existing_2025_baseline in batanghari
+2025-11-26 17:44:53,549 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:44:53,549 - INFO -       ⚠ No QC validated records to insert into batanghari.existing_2025_baseline
+2025-11-26 17:44:53,549 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:44:53,549 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:44:54,512 - INFO -       Found 623 unique geometries in existing_2025
+2025-11-26 17:45:26,583 - INFO -       ✓ Inserted 623 additional records from existing_2025 into batanghari.existing_2025_baseline
+2025-11-26 17:45:26,586 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:45:26,589 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:45:26,589 - ERROR -   ✗ Error processing batanghari: cursor already closed
+2025-11-26 17:45:26,590 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:45:26,594 - INFO - 
+[6/34] Processing BPDAS: baturusacerucuk
+2025-11-26 17:45:26,775 - INFO -     Processing existing baseline...
+2025-11-26 17:45:26,944 - INFO -       ✓ Created table existing_2025_baseline in baturusacerucuk
+2025-11-26 17:45:27,178 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:45:27,178 - INFO -       ⚠ No QC validated records to insert into baturusacerucuk.existing_2025_baseline
+2025-11-26 17:45:27,179 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:45:27,179 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:45:30,002 - INFO -       Found 2275 unique geometries in existing_2025
+2025-11-26 17:47:29,672 - INFO -       ✓ Inserted 2275 additional records from existing_2025 into baturusacerucuk.existing_2025_baseline
+2025-11-26 17:47:29,673 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 17:47:29,676 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:47:29,676 - ERROR -   ✗ Error processing baturusacerucuk: cursor already closed
+2025-11-26 17:47:29,677 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 17:47:29,691 - INFO - 
+[7/34] Processing BPDAS: benainnoelmina
+2025-11-26 17:47:29,846 - INFO -     Processing existing baseline...
+2025-11-26 17:47:29,983 - INFO -       ✓ Created table existing_2025_baseline in benainnoelmina
+2025-11-26 17:47:30,356 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 17:47:30,356 - INFO -       ⚠ No QC validated records to insert into benainnoelmina.existing_2025_baseline
+2025-11-26 17:47:30,356 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 17:47:30,356 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 17:48:10,091 - INFO -       Found 10987 unique geometries in existing_2025
+2025-11-26 18:01:49,051 - INFO -       ✓ Inserted 10987 additional records from existing_2025 into benainnoelmina.existing_2025_baseline
+2025-11-26 18:01:49,063 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:01:49,074 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:01:49,075 - ERROR -   ✗ Error processing benainnoelmina: cursor already closed
+2025-11-26 18:01:49,076 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:01:49,299 - INFO - 
+[8/34] Processing BPDAS: bonelimboto
+2025-11-26 18:01:49,523 - INFO -     Processing existing baseline...
+2025-11-26 18:01:49,669 - INFO -       ✓ Created table existing_2025_baseline in bonelimboto
+2025-11-26 18:01:49,780 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:01:49,781 - INFO -       ⚠ No QC validated records to insert into bonelimboto.existing_2025_baseline
+2025-11-26 18:01:49,781 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:01:49,781 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:01:51,728 - INFO -       Found 1833 unique geometries in existing_2025
+2025-11-26 18:03:22,605 - INFO -       ✓ Inserted 1833 additional records from existing_2025 into bonelimboto.existing_2025_baseline
+2025-11-26 18:03:22,609 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:03:22,618 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:03:22,618 - ERROR -   ✗ Error processing bonelimboto: cursor already closed
+2025-11-26 18:03:22,619 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:03:22,631 - INFO - 
+[9/34] Processing BPDAS: brantassampean
+2025-11-26 18:03:22,820 - INFO -     Processing existing baseline...
+2025-11-26 18:03:22,968 - INFO -       ✓ Created table existing_2025_baseline in brantassampean
+2025-11-26 18:03:23,092 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:03:23,092 - INFO -       ⚠ No QC validated records to insert into brantassampean.existing_2025_baseline
+2025-11-26 18:03:23,092 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:03:23,092 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:03:24,569 - ERROR -       ✗ Error processing existing baseline: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-11-26 18:03:24,571 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 723, in _process_baseline_for_theme
+    bpdas_cursor.execute(query_source)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+psycopg2.OperationalError: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+
+2025-11-26 18:03:24,573 - WARNING -   ✗ Cannot connect to brantassampean: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-11-26 18:03:24,573 - INFO - 
+[10/34] Processing BPDAS: cimanukcitanduy
+2025-11-26 18:03:24,740 - INFO -     Processing existing baseline...
+2025-11-26 18:03:24,912 - INFO -       ✓ Created table existing_2025_baseline in cimanukcitanduy
+2025-11-26 18:03:25,802 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:03:25,802 - INFO -       ⚠ No QC validated records to insert into cimanukcitanduy.existing_2025_baseline
+2025-11-26 18:03:25,802 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:03:25,802 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:03:26,413 - INFO -       Found 1212 unique geometries in existing_2025
+2025-11-26 18:04:21,382 - INFO -       ✓ Inserted 1212 additional records from existing_2025 into cimanukcitanduy.existing_2025_baseline
+2025-11-26 18:04:21,384 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:04:21,393 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:04:21,393 - ERROR -   ✗ Error processing cimanukcitanduy: cursor already closed
+2025-11-26 18:04:21,395 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:04:21,404 - INFO - 
+[11/34] Processing BPDAS: citarumciliwung
+2025-11-26 18:04:21,608 - INFO -     Processing existing baseline...
+2025-11-26 18:04:21,775 - INFO -       ✓ Created table existing_2025_baseline in citarumciliwung
+2025-11-26 18:04:21,894 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:04:21,894 - INFO -       ⚠ No QC validated records to insert into citarumciliwung.existing_2025_baseline
+2025-11-26 18:04:21,894 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:04:21,895 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:04:22,979 - INFO -       Found 2619 unique geometries in existing_2025
+2025-11-26 18:06:28,658 - INFO -       ✓ Inserted 2619 additional records from existing_2025 into citarumciliwung.existing_2025_baseline
+2025-11-26 18:06:28,662 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:06:28,669 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:06:28,669 - ERROR -   ✗ Error processing citarumciliwung: cursor already closed
+2025-11-26 18:06:28,671 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:06:28,678 - INFO - 
+[12/34] Processing BPDAS: dodokanmoyosari
+2025-11-26 18:06:28,879 - INFO -     Processing existing baseline...
+2025-11-26 18:06:29,062 - INFO -       ✓ Created table existing_2025_baseline in dodokanmoyosari
+2025-11-26 18:06:29,185 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:06:29,185 - INFO -       ⚠ No QC validated records to insert into dodokanmoyosari.existing_2025_baseline
+2025-11-26 18:06:29,185 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:06:29,185 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:06:36,296 - INFO -       Found 6495 unique geometries in existing_2025
+2025-11-26 18:13:40,130 - INFO -       ✓ Inserted 6495 additional records from existing_2025 into dodokanmoyosari.existing_2025_baseline
+2025-11-26 18:13:40,140 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:13:40,149 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:13:40,149 - ERROR -   ✗ Error processing dodokanmoyosari: cursor already closed
+2025-11-26 18:13:40,150 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:13:40,300 - INFO - 
+[13/34] Processing BPDAS: indragirirokan
+2025-11-26 18:13:40,482 - INFO -     Processing existing baseline...
+2025-11-26 18:13:40,614 - INFO -       ✓ Created table existing_2025_baseline in indragirirokan
+2025-11-26 18:13:41,082 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:13:41,082 - INFO -       ⚠ No QC validated records to insert into indragirirokan.existing_2025_baseline
+2025-11-26 18:13:41,082 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:13:41,082 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:13:54,656 - INFO -       Found 7931 unique geometries in existing_2025
+2025-11-26 18:23:49,559 - INFO -       ✓ Inserted 7931 additional records from existing_2025 into indragirirokan.existing_2025_baseline
+2025-11-26 18:23:49,565 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:23:49,572 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:23:49,572 - ERROR -   ✗ Error processing indragirirokan: cursor already closed
+2025-11-26 18:23:49,574 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:23:49,642 - INFO - 
+[14/34] Processing BPDAS: jeneberangsaddang
+2025-11-26 18:23:49,815 - INFO -     Processing existing baseline...
+2025-11-26 18:23:49,986 - INFO -       ✓ Created table existing_2025_baseline in jeneberangsaddang
+2025-11-26 18:23:50,092 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:23:50,093 - INFO -       ⚠ No QC validated records to insert into jeneberangsaddang.existing_2025_baseline
+2025-11-26 18:23:50,093 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:23:50,093 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:24:03,238 - INFO -       Found 8519 unique geometries in existing_2025
+2025-11-26 18:35:47,102 - INFO -       ✓ Inserted 8519 additional records from existing_2025 into jeneberangsaddang.existing_2025_baseline
+2025-11-26 18:35:47,110 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:35:47,121 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:35:47,121 - ERROR -   ✗ Error processing jeneberangsaddang: cursor already closed
+2025-11-26 18:35:47,122 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:35:47,255 - INFO - 
+[15/34] Processing BPDAS: kahayan
+2025-11-26 18:35:47,551 - INFO -     Processing existing baseline...
+2025-11-26 18:35:47,701 - INFO -       ✓ Created table existing_2025_baseline in kahayan
+2025-11-26 18:35:47,889 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:35:47,889 - INFO -       ⚠ No QC validated records to insert into kahayan.existing_2025_baseline
+2025-11-26 18:35:47,889 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:35:47,889 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:35:49,534 - INFO -       Found 1306 unique geometries in existing_2025
+2025-11-26 18:36:57,155 - INFO -       ✓ Inserted 1306 additional records from existing_2025 into kahayan.existing_2025_baseline
+2025-11-26 18:36:57,157 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:36:57,160 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:36:57,160 - ERROR -   ✗ Error processing kahayan: cursor already closed
+2025-11-26 18:36:57,161 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:36:57,165 - INFO - 
+[16/34] Processing BPDAS: kapuas
+2025-11-26 18:36:57,349 - INFO -     Processing existing baseline...
+2025-11-26 18:36:57,509 - INFO -       ✓ Created table existing_2025_baseline in kapuas
+2025-11-26 18:36:57,621 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:36:57,621 - INFO -       ⚠ No QC validated records to insert into kapuas.existing_2025_baseline
+2025-11-26 18:36:57,621 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:36:57,621 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:37:02,984 - INFO -       Found 2449 unique geometries in existing_2025
+2025-11-26 18:39:21,889 - INFO -       ✓ Inserted 2449 additional records from existing_2025 into kapuas.existing_2025_baseline
+2025-11-26 18:39:21,895 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:39:21,904 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:39:21,904 - ERROR -   ✗ Error processing kapuas: cursor already closed
+2025-11-26 18:39:21,906 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:39:21,919 - INFO - 
+[17/34] Processing BPDAS: karama
+2025-11-26 18:39:22,189 - INFO -     Processing existing baseline...
+2025-11-26 18:39:22,354 - INFO -       ✓ Created table existing_2025_baseline in karama
+2025-11-26 18:39:22,577 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:39:22,577 - INFO -       ⚠ No QC validated records to insert into karama.existing_2025_baseline
+2025-11-26 18:39:22,577 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:39:22,577 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:39:26,567 - INFO -       Found 1993 unique geometries in existing_2025
+2025-11-26 18:41:21,352 - INFO -       ✓ Inserted 1993 additional records from existing_2025 into karama.existing_2025_baseline
+2025-11-26 18:41:21,360 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:41:21,367 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:41:21,367 - ERROR -   ✗ Error processing karama: cursor already closed
+2025-11-26 18:41:21,371 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:41:21,391 - INFO - 
+[18/34] Processing BPDAS: ketahun
+2025-11-26 18:41:21,690 - INFO -     Processing existing baseline...
+2025-11-26 18:41:21,828 - INFO -       ✓ Created table existing_2025_baseline in ketahun
+2025-11-26 18:41:21,937 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:41:21,938 - INFO -       ⚠ No QC validated records to insert into ketahun.existing_2025_baseline
+2025-11-26 18:41:21,938 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:41:21,938 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:41:22,367 - INFO -       Found 378 unique geometries in existing_2025
+2025-11-26 18:41:40,770 - INFO -       ✓ Inserted 378 additional records from existing_2025 into ketahun.existing_2025_baseline
+2025-11-26 18:41:40,773 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:41:40,786 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:41:40,787 - ERROR -   ✗ Error processing ketahun: cursor already closed
+2025-11-26 18:41:40,791 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:41:40,792 - INFO - 
+[19/34] Processing BPDAS: konaweha
+2025-11-26 18:41:40,977 - INFO -     Processing existing baseline...
+2025-11-26 18:41:41,119 - INFO -       ✓ Created table existing_2025_baseline in konaweha
+2025-11-26 18:41:41,226 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:41:41,227 - INFO -       ⚠ No QC validated records to insert into konaweha.existing_2025_baseline
+2025-11-26 18:41:41,227 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:41:41,227 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:41:50,894 - INFO -       Found 8845 unique geometries in existing_2025
+2025-11-26 18:52:10,602 - INFO -       ✓ Inserted 8845 additional records from existing_2025 into konaweha.existing_2025_baseline
+2025-11-26 18:52:10,610 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 18:52:10,621 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:52:10,622 - ERROR -   ✗ Error processing konaweha: cursor already closed
+2025-11-26 18:52:10,623 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 18:52:10,699 - INFO - 
+[20/34] Processing BPDAS: kruengaceh
+2025-11-26 18:52:10,885 - INFO -     Processing existing baseline...
+2025-11-26 18:52:11,032 - INFO -       ✓ Created table existing_2025_baseline in kruengaceh
+2025-11-26 18:52:11,213 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 18:52:11,213 - INFO -       ⚠ No QC validated records to insert into kruengaceh.existing_2025_baseline
+2025-11-26 18:52:11,213 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 18:52:11,213 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 18:52:20,538 - INFO -       Found 9269 unique geometries in existing_2025
+2025-11-26 19:07:25,022 - INFO -       ✓ Inserted 9269 additional records from existing_2025 into kruengaceh.existing_2025_baseline
+2025-11-26 19:07:25,030 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:07:25,045 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:07:25,046 - ERROR -   ✗ Error processing kruengaceh: cursor already closed
+2025-11-26 19:07:25,046 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:07:25,573 - INFO - 
+[21/34] Processing BPDAS: mahakamberau
+2025-11-26 19:07:25,781 - INFO -     Processing existing baseline...
+2025-11-26 19:07:25,933 - INFO -       ✓ Created table existing_2025_baseline in mahakamberau
+2025-11-26 19:07:26,538 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:07:26,538 - INFO -       ⚠ No QC validated records to insert into mahakamberau.existing_2025_baseline
+2025-11-26 19:07:26,538 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:07:26,538 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:07:47,426 - INFO -       Found 16494 unique geometries in existing_2025
+2025-11-26 19:30:32,763 - INFO -       ✓ Inserted 16494 additional records from existing_2025 into mahakamberau.existing_2025_baseline
+2025-11-26 19:30:32,774 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:30:32,794 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:30:32,795 - ERROR -   ✗ Error processing mahakamberau: cursor already closed
+2025-11-26 19:30:32,796 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:30:33,134 - INFO - 
+[22/34] Processing BPDAS: memberamo
+2025-11-26 19:30:33,310 - INFO -     Processing existing baseline...
+2025-11-26 19:30:33,450 - INFO -       ✓ Created table existing_2025_baseline in memberamo
+2025-11-26 19:30:34,119 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:30:34,120 - INFO -       ⚠ No QC validated records to insert into memberamo.existing_2025_baseline
+2025-11-26 19:30:34,120 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:30:34,120 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:30:43,203 - INFO -       Found 3850 unique geometries in existing_2025
+2025-11-26 19:35:02,908 - INFO -       ✓ Inserted 3850 additional records from existing_2025 into memberamo.existing_2025_baseline
+2025-11-26 19:35:02,917 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:35:02,944 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:35:02,944 - ERROR -   ✗ Error processing memberamo: cursor already closed
+2025-11-26 19:35:02,948 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:35:03,099 - INFO - 
+[23/34] Processing BPDAS: musi
+2025-11-26 19:35:03,295 - INFO -     Processing existing baseline...
+2025-11-26 19:35:03,445 - INFO -       ✓ Created table existing_2025_baseline in musi
+2025-11-26 19:35:03,558 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:35:03,560 - INFO -       ⚠ No QC validated records to insert into musi.existing_2025_baseline
+2025-11-26 19:35:03,560 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:35:03,560 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:35:05,347 - INFO -       Found 926 unique geometries in existing_2025
+2025-11-26 19:35:50,059 - INFO -       ✓ Inserted 926 additional records from existing_2025 into musi.existing_2025_baseline
+2025-11-26 19:35:50,063 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:35:50,068 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:35:50,069 - ERROR -   ✗ Error processing musi: cursor already closed
+2025-11-26 19:35:50,070 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:35:50,074 - INFO - 
+[24/34] Processing BPDAS: paluposo
+2025-11-26 19:35:50,269 - INFO -     Processing existing baseline...
+2025-11-26 19:35:50,419 - INFO -       ✓ Created table existing_2025_baseline in paluposo
+2025-11-26 19:35:50,775 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:35:50,776 - INFO -       ⚠ No QC validated records to insert into paluposo.existing_2025_baseline
+2025-11-26 19:35:50,776 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:35:50,776 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:36:12,284 - INFO -       Found 11054 unique geometries in existing_2025
+2025-11-26 19:51:57,922 - INFO -       ✓ Inserted 11054 additional records from existing_2025 into paluposo.existing_2025_baseline
+2025-11-26 19:51:57,934 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:51:57,952 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:51:57,952 - ERROR -   ✗ Error processing paluposo: cursor already closed
+2025-11-26 19:51:57,953 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:51:58,336 - INFO - 
+[25/34] Processing BPDAS: pemalijratun
+2025-11-26 19:51:58,516 - INFO -     Processing existing baseline...
+2025-11-26 19:51:58,684 - INFO -       ✓ Created table existing_2025_baseline in pemalijratun
+2025-11-26 19:51:58,796 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:51:58,796 - INFO -       ⚠ No QC validated records to insert into pemalijratun.existing_2025_baseline
+2025-11-26 19:51:58,796 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:51:58,796 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:51:59,713 - INFO -       Found 2880 unique geometries in existing_2025
+2025-11-26 19:54:13,943 - INFO -       ✓ Inserted 2880 additional records from existing_2025 into pemalijratun.existing_2025_baseline
+2025-11-26 19:54:13,948 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 19:54:13,957 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:54:13,958 - ERROR -   ✗ Error processing pemalijratun: cursor already closed
+2025-11-26 19:54:13,960 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 19:54:13,970 - INFO - 
+[26/34] Processing BPDAS: remuransiki
+2025-11-26 19:54:14,157 - INFO -     Processing existing baseline...
+2025-11-26 19:54:14,327 - INFO -       ✓ Created table existing_2025_baseline in remuransiki
+2025-11-26 19:54:14,447 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 19:54:14,447 - INFO -       ⚠ No QC validated records to insert into remuransiki.existing_2025_baseline
+2025-11-26 19:54:14,448 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 19:54:14,448 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 19:54:29,394 - INFO -       Found 10200 unique geometries in existing_2025
+2025-11-26 20:10:52,012 - INFO -       ✓ Inserted 10200 additional records from existing_2025 into remuransiki.existing_2025_baseline
+2025-11-26 20:10:52,024 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:10:52,042 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:10:52,043 - ERROR -   ✗ Error processing remuransiki: cursor already closed
+2025-11-26 20:10:52,044 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:10:52,348 - INFO - 
+[27/34] Processing BPDAS: seijangduriangkang
+2025-11-26 20:10:52,533 - INFO -     Processing existing baseline...
+2025-11-26 20:10:52,715 - INFO -       ✓ Created table existing_2025_baseline in seijangduriangkang
+2025-11-26 20:10:52,859 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:10:52,860 - INFO -       ⚠ No QC validated records to insert into seijangduriangkang.existing_2025_baseline
+2025-11-26 20:10:52,860 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:10:52,860 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:11:04,143 - INFO -       Found 10041 unique geometries in existing_2025
+2025-11-26 20:25:24,918 - INFO -       ✓ Inserted 10041 additional records from existing_2025 into seijangduriangkang.existing_2025_baseline
+2025-11-26 20:25:24,925 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:25:24,936 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:25:24,936 - ERROR -   ✗ Error processing seijangduriangkang: cursor already closed
+2025-11-26 20:25:24,937 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:25:25,372 - INFO - 
+[28/34] Processing BPDAS: serayuopakprogo
+2025-11-26 20:25:25,552 - INFO -     Processing existing baseline...
+2025-11-26 20:25:25,736 - INFO -       ✓ Created table existing_2025_baseline in serayuopakprogo
+2025-11-26 20:25:25,897 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:25:25,898 - INFO -       ⚠ No QC validated records to insert into serayuopakprogo.existing_2025_baseline
+2025-11-26 20:25:25,898 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:25:25,898 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:25:26,089 - INFO -       Found 124 unique geometries in existing_2025
+2025-11-26 20:25:33,219 - INFO -       ✓ Inserted 124 additional records from existing_2025 into serayuopakprogo.existing_2025_baseline
+2025-11-26 20:25:33,220 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:25:33,221 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:25:33,221 - ERROR -   ✗ Error processing serayuopakprogo: cursor already closed
+2025-11-26 20:25:33,222 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:25:33,222 - INFO - 
+[29/34] Processing BPDAS: solo
+2025-11-26 20:25:33,443 - INFO -     Processing existing baseline...
+2025-11-26 20:25:33,615 - INFO -       ✓ Created table existing_2025_baseline in solo
+2025-11-26 20:25:33,728 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:25:33,729 - INFO -       ⚠ No QC validated records to insert into solo.existing_2025_baseline
+2025-11-26 20:25:33,729 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:25:33,729 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:25:34,520 - INFO -       Found 1604 unique geometries in existing_2025
+2025-11-26 20:26:59,808 - INFO -       ✓ Inserted 1604 additional records from existing_2025 into solo.existing_2025_baseline
+2025-11-26 20:26:59,812 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:26:59,816 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:26:59,816 - ERROR -   ✗ Error processing solo: cursor already closed
+2025-11-26 20:26:59,817 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:26:59,821 - INFO - 
+[30/34] Processing BPDAS: tondano
+2025-11-26 20:27:00,080 - INFO -     Processing existing baseline...
+2025-11-26 20:27:00,298 - INFO -       ✓ Created table existing_2025_baseline in tondano
+2025-11-26 20:27:00,456 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:27:00,456 - INFO -       ⚠ No QC validated records to insert into tondano.existing_2025_baseline
+2025-11-26 20:27:00,456 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:27:00,456 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:27:02,210 - INFO -       Found 3505 unique geometries in existing_2025
+2025-11-26 20:29:57,534 - INFO -       ✓ Inserted 3505 additional records from existing_2025 into tondano.existing_2025_baseline
+2025-11-26 20:29:57,540 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:29:57,548 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:29:57,549 - ERROR -   ✗ Error processing tondano: cursor already closed
+2025-11-26 20:29:57,550 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:29:57,574 - INFO - 
+[31/34] Processing BPDAS: undaanyar
+2025-11-26 20:29:57,744 - INFO -     Processing existing baseline...
+2025-11-26 20:29:57,903 - INFO -       ✓ Created table existing_2025_baseline in undaanyar
+2025-11-26 20:29:58,137 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:29:58,138 - INFO -       ⚠ No QC validated records to insert into undaanyar.existing_2025_baseline
+2025-11-26 20:29:58,138 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:29:58,138 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:29:59,461 - INFO -       Found 1152 unique geometries in existing_2025
+2025-11-26 20:30:54,495 - INFO -       ✓ Inserted 1152 additional records from existing_2025 into undaanyar.existing_2025_baseline
+2025-11-26 20:30:54,500 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:30:54,507 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:30:54,507 - ERROR -   ✗ Error processing undaanyar: cursor already closed
+2025-11-26 20:30:54,508 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:30:54,539 - INFO - 
+[32/34] Processing BPDAS: waehapubatumerah
+2025-11-26 20:30:54,759 - INFO -     Processing existing baseline...
+2025-11-26 20:30:54,929 - INFO -       ✓ Created table existing_2025_baseline in waehapubatumerah
+2025-11-26 20:30:55,170 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:30:55,170 - INFO -       ⚠ No QC validated records to insert into waehapubatumerah.existing_2025_baseline
+2025-11-26 20:30:55,170 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:30:55,170 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:31:03,539 - INFO -       Found 11685 unique geometries in existing_2025
+2025-11-26 20:46:12,414 - INFO -       ✓ Inserted 11685 additional records from existing_2025 into waehapubatumerah.existing_2025_baseline
+2025-11-26 20:46:12,423 - ERROR -       ✗ Error processing existing baseline: cursor already closed
+2025-11-26 20:46:12,434 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:46:12,434 - ERROR -   ✗ Error processing waehapubatumerah: cursor already closed
+2025-11-26 20:46:12,436 - ERROR - Traceback (most recent call last):
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 449, in step_3_process_bpdas_databases
+    self._process_baseline_for_theme(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        bpdas_db, 'existing', bpdas_cursor, pmn_cursor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/suryahadiningrat/Documents/projects/klhk/pmn compiler/pemutakhiran_baseline.py", line 772, in _process_baseline_for_theme
+    pmn_cursor.execute(f"""
+    ~~~~~~~~~~~~~~~~~~^^^^^
+        SELECT COUNT(*) FROM pmn.{baseline_table}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        WHERE ST_Equals(geometry, ST_Force2D(ST_GeomFromWKB(%s, 4326)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AND bpdas = %s
+        ^^^^^^^^^^^^^^
+    """, (psycopg2.Binary(geom_binary), bpdas_db))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.InterfaceError: cursor already closed
+
+2025-11-26 20:46:13,009 - INFO - 
+[33/34] Processing BPDAS: wampuseiular
+2025-11-26 20:46:13,365 - INFO -     Processing existing baseline...
+2025-11-26 20:46:13,537 - INFO -       ✓ Created table existing_2025_baseline in wampuseiular
+2025-11-26 20:46:13,707 - INFO -       ⚠ qcstatus column not found in baseline table, skipping QC data insertion
+2025-11-26 20:46:13,707 - INFO -       ⚠ No QC validated records to insert into wampuseiular.existing_2025_baseline
+2025-11-26 20:46:13,707 - INFO -       ⚠ No QC validated records to insert into pmn.existing_2025_baseline
+2025-11-26 20:46:13,707 - INFO -     Inserting remaining data from existing_2025...
+2025-11-26 20:46:16,490 - INFO -       Found 5205 unique geometries in existing_2025

@@ -2,3 +2,5 @@ Pipfile
 Pipfile.lock
 pmn_compiler.log
 pmtiles
+*.log
+references

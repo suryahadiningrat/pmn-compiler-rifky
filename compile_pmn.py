@@ -7,12 +7,14 @@ Mengkompilasi data mangrove dari berbagai database BPDAS ke dalam format final
 
 import os
 import sys
+import re
 import json
 import hashlib
 import logging
 import zipfile
 import tempfile
 import subprocess
+import unicodedata
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from shapely.ops import unary_union, polygonize
@@ -41,6 +43,55 @@ MINIO_CONFIG = {
     'bucket': 'idpm',
     'access_key': 'SvMJ2t6I3QPqEheG9xDd',
     'secret_key': 'F2uZ4W1pwptDzM4DzbGAfT8mH8SZN1ozsyaQYTEF'
+}
+
+# Konfigurasi PMTiles per BPDAS
+PMTILES_BPDAS_CONFIG = {
+    'minzoom': 4,
+    'maxzoom': 17,
+    'minio_prefix': 'static/layer'  # Base path di MinIO: static/layer/{theme}/{year}/bpdas/
+}
+
+# Mapping nama database BPDAS ke slug yang benar
+# Key: nama database (lowercase), Value: slug untuk filename
+BPDAS_SLUG_MAP = {
+    'agamkuantan': 'agam_kuantan',
+    'akemalamo': 'ake_malamo',
+    'asahanbarumun': 'asahan_barumun',
+    'barito': 'barito',
+    'batanghari': 'batanghari',
+    'baturusacerucuk': 'baturusa_cerucuk',
+    'benainnoelmina': 'benain_noelmina',
+    'bonebolango': 'bone_bolango',
+    'bonelimboto': 'bone_limboto',
+    'brantassampean': 'brantas_sampean',
+    'cimanukcitanduy': 'cimanuk_citanduy',
+    'citarumciliwung': 'citarum_ciliwung',
+    'dodokanmoyosari': 'dodokan_moyosari',
+    'indragirirokan': 'indragiri_rokan',
+    'jeneberangsaddang': 'jeneberang_saddang',
+    'kahayan': 'kahayan',
+    'kapuas': 'kapuas',
+    'karama': 'karama',
+    'ketahun': 'ketahun',
+    'konaweha': 'konaweha',
+    'kruengaceh': 'krueng_aceh',
+    'lariangmamasa': 'lariang_mamasa',
+    'mahakamberau': 'mahakam_berau',
+    'memberamo': 'memberamo',
+    'musi': 'musi',
+    'paluposo': 'palu_poso',
+    'pemalijratun': 'pemali_jratun',
+    'remuransiki': 'remu_ransiki',
+    'sampara': 'sampara',
+    'seijangduriangkang': 'sei_jang_duriangkang',
+    'serayuopakprogo': 'serayu_opak_progo',
+    'solo': 'solo',
+    'tondano': 'tondano',
+    'undaanyar': 'unda_anyar',
+    'waehapubatumerah': 'waehapu_batu_merah',
+    'wampuseiular': 'wampu_sei_ular',
+    'wayseputihwaysekampung': 'way_seputih_way_sekampung',
 }
 
 # Setup logging
@@ -1200,6 +1251,193 @@ class PMNCompiler:
             
         except Exception as e:
             logger.error(f"Step 9 failed: {e}")
+            raise
+
+    def _slugify(self, value: str) -> str:
+        """
+        Normalisasi & 'slugify' nama -> lowercase, underscore, alfanumerik.
+        Digunakan untuk membuat nama file yang aman.
+        """
+        value = str(value)
+        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        value = value.lower().strip()
+        value = re.sub(r"\s+", "_", value)               # spasi -> underscore
+        value = re.sub(r"[^a-z0-9_]+", "", value)        # hanya a-z0-9_
+        value = re.sub(r"_+", "_", value).strip("_")     # rapikan underscore
+        return value or "unknown"
+
+    def _escape_sql_literal(self, val: str) -> str:
+        """
+        Escape single quote untuk literal SQL (ogr2ogr tidak support bind params).
+        """
+        return str(val).replace("'", "''")
+
+    def _build_ogr2ogr_pmtiles_cmd(self, output_file: str, layer_name: str, 
+                                    schema: str, table: str, bpdas_column: str, 
+                                    bpdas_value: str) -> list:
+        """
+        Build ogr2ogr command untuk generate PMTiles dengan filter BPDAS.
+        
+        Args:
+            output_file: Path ke file output PMTiles
+            layer_name: Nama layer dalam PMTiles
+            schema: Schema database (pmn)
+            table: Nama tabel (existing_{year}_copy1 atau potensi_{year}_copy1)
+            bpdas_column: Nama kolom BPDAS
+            bpdas_value: Nilai BPDAS untuk filter
+        """
+        # SQL query dengan filter BPDAS
+        val_sql = self._escape_sql_literal(bpdas_value)
+        sql = f'SELECT * FROM {schema}.{table} WHERE "{bpdas_column}" = \'{val_sql}\''
+        
+        # Connection string ke PostgreSQL
+        pg_conn = f"PG:host={DB_CONFIG['host']} port={DB_CONFIG['port']} dbname=postgres user={DB_CONFIG['user']} password={DB_CONFIG['password']}"
+        
+        # Susun command ogr2ogr
+        cmd = [
+            "ogr2ogr", "-progress",
+            "-dsco", f"MINZOOM={PMTILES_BPDAS_CONFIG['minzoom']}",
+            "-dsco", f"MAXZOOM={PMTILES_BPDAS_CONFIG['maxzoom']}",
+            "-f", "PMTiles",
+            "-overwrite",
+            output_file,
+            pg_conn,
+            "-sql", sql,
+            "-nln", layer_name,
+            "-nlt", "PROMOTE_TO_MULTI"
+        ]
+        return cmd
+
+    def step_9b_generate_pmtiles_per_bpdas(self) -> Dict[str, List[str]]:
+        """
+        Step 9B: Generate PMTiles per BPDAS (92%)
+        
+        Menghasilkan file PMTiles terpisah untuk setiap BPDAS yang ada di data.
+        Output di-upload ke MinIO path: layers/bpdas/{bpdas_slug}_{year}_{theme}.pmtiles
+        
+        Returns:
+            Dict dengan key 'existing' dan 'potensi', masing-masing berisi list URL PMTiles
+        """
+        logger.info("Step 9B: Generating PMTiles per BPDAS...")
+        logger.info("=" * 60)
+        
+        try:
+            conn = self._get_db_connection()
+            cursor = conn.cursor()
+            
+            pmtiles_urls = {'existing': [], 'potensi': []}
+            pmtiles_local_dir = os.path.join(self.temp_dir, 'pmtiles_bpdas')
+            os.makedirs(pmtiles_local_dir, exist_ok=True)
+            
+            total_generated = 0
+            total_failed = 0
+            
+            for theme in ['existing', 'potensi']:
+                table_name = f'{theme}_{self.year}_copy1'
+                
+                # Get distinct BPDAS values dari tabel
+                cursor.execute(f"""
+                    SELECT DISTINCT bpdas 
+                    FROM pmn.{table_name} 
+                    WHERE bpdas IS NOT NULL AND bpdas != ''
+                    ORDER BY bpdas
+                """)
+                
+                bpdas_list = [row[0] for row in cursor.fetchall()]
+                
+                if not bpdas_list:
+                    logger.warning(f"No BPDAS found in pmn.{table_name}")
+                    continue
+                
+                logger.info(f"\n📊 {theme.upper()}: Found {len(bpdas_list)} unique BPDAS")
+                
+                for idx, bpdas_name in enumerate(bpdas_list, start=1):
+                    # Gunakan BPDAS_SLUG_MAP jika tersedia, fallback ke slugify
+                    bpdas_key = bpdas_name.lower().replace(' ', '').replace('_', '').replace('-', '')
+                    bpdas_slug = BPDAS_SLUG_MAP.get(bpdas_key, self._slugify(bpdas_name))
+                    
+                    layer_name = f"{theme}_{bpdas_slug}_{self.year}"
+                    local_file = os.path.join(pmtiles_local_dir, f"{bpdas_slug}_{self.year}.pmtiles")
+                    # Path: static/layer/{theme}/{year}/bpdas/{bpdas_slug}_{year}.pmtiles
+                    minio_path = f"{PMTILES_BPDAS_CONFIG['minio_prefix']}/{theme}/{self.year}/bpdas/{bpdas_slug}_{self.year}.pmtiles"
+                    
+                    logger.info(f"  [{idx}/{len(bpdas_list)}] Processing: {bpdas_name} -> {bpdas_slug}")
+                    
+                    try:
+                        # Build dan jalankan ogr2ogr command
+                        cmd = self._build_ogr2ogr_pmtiles_cmd(
+                            output_file=local_file,
+                            layer_name=layer_name,
+                            schema='pmn',
+                            table=table_name,
+                            bpdas_column='bpdas',
+                            bpdas_value=bpdas_name
+                        )
+                        
+                        result = subprocess.run(cmd, capture_output=True, text=True)
+                        
+                        if result.returncode != 0:
+                            logger.error(f"    ❌ ogr2ogr failed: {result.stderr}")
+                            total_failed += 1
+                            continue
+                        
+                        # Check if file was created and has content
+                        if not os.path.exists(local_file) or os.path.getsize(local_file) == 0:
+                            logger.warning(f"    ⚠️  PMTiles file empty or not created")
+                            total_failed += 1
+                            continue
+                        
+                        # Upload ke MinIO
+                        self.minio_client.fput_object(
+                            MINIO_CONFIG['bucket'],
+                            minio_path,
+                            local_file
+                        )
+                        
+                        pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{minio_path}"
+                        pmtiles_urls[theme].append(pmtiles_url)
+                        
+                        file_size_mb = os.path.getsize(local_file) / (1024 * 1024)
+                        logger.info(f"    ✅ Generated: {minio_path} ({file_size_mb:.2f} MB)")
+                        total_generated += 1
+                        
+                        # Cleanup local file to save space
+                        os.remove(local_file)
+                        
+                    except FileNotFoundError:
+                        logger.error("    ❌ ogr2ogr not found! Please install GDAL with PMTiles driver.")
+                        total_failed += 1
+                    except subprocess.CalledProcessError as e:
+                        logger.error(f"    ❌ Failed: {e}")
+                        total_failed += 1
+                    except S3Error as e:
+                        logger.error(f"    ❌ MinIO upload failed: {e}")
+                        total_failed += 1
+                    except Exception as e:
+                        logger.error(f"    ❌ Unexpected error: {e}")
+                        total_failed += 1
+            
+            cursor.close()
+            conn.close()
+            
+            # Summary
+            logger.info("\n" + "=" * 60)
+            logger.info("PMTILES PER BPDAS SUMMARY:")
+            logger.info(f"  Total generated: {total_generated}")
+            logger.info(f"  Total failed: {total_failed}")
+            logger.info(f"  Existing PMTiles: {len(pmtiles_urls['existing'])}")
+            logger.info(f"  Potensi PMTiles: {len(pmtiles_urls['potensi'])}")
+            logger.info("=" * 60)
+            
+            self._update_progress(92)
+            logger.info("Step 9B completed: PMTiles per BPDAS generation finished")
+            
+            return pmtiles_urls
+            
+        except Exception as e:
+            logger.error(f"Step 9B failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             raise
 
     def step_10_update_metadata(self, converted_files: Dict[str, Dict[str, str]], pmtiles_urls: Dict[str, str]):
@@ -2440,8 +2678,11 @@ class PMNCompiler:
             # Step 8: Convert formats
             converted_files = self.step_8_convert_formats(geojson_files)
             
-            # Step 9: Generate PMTiles
+            # Step 9: Generate PMTiles (Nasional)
             pmtiles_urls = self.step_9_generate_pmtiles(geojson_files)
+            
+            # Step 9B: Generate PMTiles per BPDAS
+            pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
             
             # Step 10: Update metadata
             self.step_10_update_metadata(converted_files, pmtiles_urls)
