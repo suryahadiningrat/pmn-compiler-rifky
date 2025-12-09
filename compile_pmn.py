@@ -43,14 +43,15 @@ S3_CONFIG = {
     'endpoint_url': 'https://s3.ap-southeast-3.amazonaws.com',
     'public_host': 'https://idpm-bucket.s3.ap-southeast-3.amazonaws.com',
     'bucket': 'idpm-bucket',
-    'region': 'ap-southeast-3'
+    'region': 'ap-southeast-3',
+    's3_prefix': 'idpm'  # Prefix for all S3 paths: idpm/layers/, idpm/pmn-result/
 }
 
 # Konfigurasi PMTiles per BPDAS
 PMTILES_BPDAS_CONFIG = {
     'minzoom': 4,
     'maxzoom': 17,
-    's3_prefix': 'static/layer'  # Base path di S3: static/layer/{theme}/{year}/bpdas/
+    's3_prefix': 'idpm/static/layer'  # Base path di S3: idpm/static/layer/{theme}/{year}/bpdas/
 }
 
 # Mapping nama database BPDAS ke slug yang benar
@@ -874,8 +875,8 @@ class PMNCompiler:
         logger.info("Step 5: Cleaning old S3 files...")
         
         try:
-            # List and delete files in pmn-result/{year}/ path
-            prefix = f"pmn-result/{self.year}/"
+            # List and delete files in idpm/pmn-result/{year}/ path
+            prefix = f"{S3_CONFIG['s3_prefix']}/pmn-result/{self.year}/"
             
             paginator = self.s3_client.get_paginator('list_objects_v2')
             pages = paginator.paginate(Bucket=S3_CONFIG['bucket'], Prefix=prefix)
@@ -903,8 +904,8 @@ class PMNCompiler:
         
         try:
             pmtiles_files = [
-                f"layers/EXISTING{self.year}.pmtiles",
-                f"layers/POTENSI{self.year}.pmtiles"
+                f"{S3_CONFIG['s3_prefix']}/layers/EXISTING{self.year}.pmtiles",
+                f"{S3_CONFIG['s3_prefix']}/layers/POTENSI{self.year}.pmtiles"
             ]
             
             for pmtiles_file in pmtiles_files:
@@ -1233,7 +1234,7 @@ class PMNCompiler:
                 ], check=True)
                 
                 # Upload to S3 - dengan ekstensi .pmtiles
-                s3_path_with_ext = f"layers/{theme.upper()}{self.year}.pmtiles"
+                s3_path_with_ext = f"{S3_CONFIG['s3_prefix']}/layers/{theme.upper()}{self.year}.pmtiles"
                 self.s3_client.upload_file(
                     pmtiles_file,
                     S3_CONFIG['bucket'],
@@ -1242,13 +1243,13 @@ class PMNCompiler:
                 logger.info(f"  ✅ Uploaded: {s3_path_with_ext}")
                 
                 # Upload to S3 - tanpa ekstensi (untuk legacy/geoportal compatibility)
-                s3_path_no_ext = f"layers/{theme.upper()}{self.year}"
+                s3_path_no_ext = f"{S3_CONFIG['s3_prefix']}/layers/{theme.upper()}{self.year}"
                 self.s3_client.upload_file(
                     pmtiles_file,
                     S3_CONFIG['bucket'],
                     s3_path_no_ext
                 )
-                logger.info(f"  ✅ Uploaded: {s3_path_no_ext}")
+                logger.info(f"  ✅ Uploaded: {s3_path_no_ext}"))
                 
                 # URL tanpa ekstensi untuk geoportal.layers
                 pmtiles_url = f"{S3_CONFIG['public_host']}/{s3_path_no_ext}"
@@ -1526,16 +1527,16 @@ class PMNCompiler:
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                     """, (
-                        layer_json,           # layer
-                        '{}',                 # style
+                        layer_json,           # layer (JSON)
+                        '{}',                 # style (JSON)
                         False,                # public
                         datetime.now().date(), # date_created
                         layer_name,           # description
                         '',                   # owner
                         layer_name,           # nama
                         '/icons/geo-2.png',   # avatar
-                        '',                   # fields
-                        '',                   # status
+                        '{}',                 # fields (JSON - must be valid JSON)
+                        '{}',                 # status (JSON - must be valid JSON)
                         False,                # immortal
                         'layers'              # type
                     ))
@@ -1586,8 +1587,8 @@ class PMNCompiler:
                 file_size = os.path.getsize(gdb_file)
                 
                 # Upload files to S3
-                gdb_s3_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb.zip"
-                shp_s3_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.zip"
+                gdb_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb.zip"
+                shp_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.zip"
                 
                 self.s3_client.upload_file(
                     converted_files[theme]['gdb_zip'],
@@ -1666,20 +1667,20 @@ class PMNCompiler:
         files_status = {}
         
         # Check PMTiles
-        pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
-        pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
+        pmtiles_existing = f"{S3_CONFIG['s3_prefix']}/layers/EXISTING{year}.pmtiles"
+        pmtiles_potensi = f"{S3_CONFIG['s3_prefix']}/layers/POTENSI{year}.pmtiles"
         files_status['pmtiles_existing'] = self._check_file_exists_in_s3(pmtiles_existing)
         files_status['pmtiles_potensi'] = self._check_file_exists_in_s3(pmtiles_potensi)
         
         # Check Shapefile
-        shp_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.zip"
-        shp_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.zip"
+        shp_existing = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.zip"
+        shp_potensi = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.zip"
         files_status['shp_existing'] = self._check_file_exists_in_s3(shp_existing)
         files_status['shp_potensi'] = self._check_file_exists_in_s3(shp_potensi)
         
         # Check GDB
-        gdb_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.gdb.zip"
-        gdb_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.gdb.zip"
+        gdb_existing = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.gdb.zip"
+        gdb_potensi = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.gdb.zip"
         files_status['gdb_existing'] = self._check_file_exists_in_s3(gdb_existing)
         files_status['gdb_potensi'] = self._check_file_exists_in_s3(gdb_potensi)
         
@@ -1833,8 +1834,8 @@ class PMNCompiler:
         logger.info(f"Converting PMTiles to Shapefile and GDB for year {year}")
         
         # Check which PMTiles exist (at least one must exist)
-        pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
-        pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
+        pmtiles_existing = f"{S3_CONFIG['s3_prefix']}/layers/EXISTING{year}.pmtiles"
+        pmtiles_potensi = f"{S3_CONFIG['s3_prefix']}/layers/POTENSI{year}.pmtiles"
         
         existing_exists = self._check_file_exists_in_s3(pmtiles_existing)
         potensi_exists = self._check_file_exists_in_s3(pmtiles_potensi)
@@ -2546,7 +2547,7 @@ class PMNCompiler:
                         zipf.write(file_path, os.path.basename(file_path))
             
             # Validate and upload Shapefile to S3
-            shp_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            shp_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
             
             if self._validate_shapefile(shp_zip):
                 shp_size = os.path.getsize(shp_zip)
@@ -2603,7 +2604,7 @@ class PMNCompiler:
                         zipf.write(file_path, arcname)
             
             # Validate and upload GDB to S3
-            gdb_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            gdb_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
             
             if self._validate_gdb(gdb_zip):
                 gdb_size = os.path.getsize(gdb_zip)
@@ -2615,7 +2616,7 @@ class PMNCompiler:
                 raise Exception(f"GDB validation failed: {gdb_zip}")
             
             # Update metadata in compiler_datasets
-            pmtiles_path = f"layers/{theme.upper()}{year}.pmtiles"
+            pmtiles_path = f"{S3_CONFIG['s3_prefix']}/layers/{theme.upper()}{year}.pmtiles"
             pmtiles_url = f"{S3_CONFIG['public_host']}/{pmtiles_path}"
             self._update_historical_metadata(year, theme, shp_zip, gdb_zip, pmtiles_url)
             
@@ -2646,8 +2647,8 @@ class PMNCompiler:
             file_size = os.path.getsize(gdb_zip)
             
             # Construct URLs
-            gdb_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
-            shp_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            gdb_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            shp_s3_path = f"{S3_CONFIG['s3_prefix']}/pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
             
             gdb_url = f"{S3_CONFIG['public_host']}/{gdb_s3_path}"
             shp_url = f"{S3_CONFIG['public_host']}/{shp_s3_path}"
