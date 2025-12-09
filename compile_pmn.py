@@ -7,7 +7,7 @@ Mengkompilasi data mangrove dari berbagai database BPDAS ke dalam format final
 
 import os
 import sys
-`import re
+import re
 import json
 import hashlib
 import logging
@@ -1565,7 +1565,7 @@ class PMNCompiler:
 
     def step_10_update_metadata(self, converted_files: Dict[str, Dict[str, str]], pmtiles_urls: Dict[str, str]):
         """Step 10: Update Metadata (95%)"""
-        logger.info("Step 10: Updating metadata..."))
+        logger.info("Step 10: Updating metadata...")
         
         try:
             conn = self._get_db_connection()
