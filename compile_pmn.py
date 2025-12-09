@@ -7,7 +7,7 @@ Mengkompilasi data mangrove dari berbagai database BPDAS ke dalam format final
 
 import os
 import sys
-import re
+`import re
 import json
 import hashlib
 import logging
@@ -1231,15 +1231,26 @@ class PMNCompiler:
                     geojson_file
                 ], check=True)
                 
-                # Upload to MinIO
-                minio_path = f"layers/{theme.upper()}{self.year}.pmtiles"
+                # Upload to MinIO - dengan ekstensi .pmtiles
+                minio_path_with_ext = f"layers/{theme.upper()}{self.year}.pmtiles"
                 self.minio_client.fput_object(
                     MINIO_CONFIG['bucket'],
-                    minio_path,
+                    minio_path_with_ext,
                     pmtiles_file
                 )
+                logger.info(f"  ✅ Uploaded: {minio_path_with_ext}")
                 
-                pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{minio_path}"
+                # Upload to MinIO - tanpa ekstensi (untuk legacy/geoportal compatibility)
+                minio_path_no_ext = f"layers/{theme.upper()}{self.year}"
+                self.minio_client.fput_object(
+                    MINIO_CONFIG['bucket'],
+                    minio_path_no_ext,
+                    pmtiles_file
+                )
+                logger.info(f"  ✅ Uploaded: {minio_path_no_ext}")
+                
+                # URL tanpa ekstensi untuk geoportal.layers
+                pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{minio_path_no_ext}"
                 pmtiles_urls[theme] = pmtiles_url
                 
                 logger.info(f"Generated and uploaded PMTiles for {theme}: {pmtiles_url}")
@@ -1387,10 +1398,18 @@ class PMNCompiler:
                             total_failed += 1
                             continue
                         
-                        # Upload ke MinIO
+                        # Upload ke MinIO - dengan ekstensi .pmtiles
                         self.minio_client.fput_object(
                             MINIO_CONFIG['bucket'],
                             minio_path,
+                            local_file
+                        )
+                        
+                        # Upload ke MinIO - tanpa ekstensi (untuk geoportal compatibility)
+                        minio_path_no_ext = minio_path.replace('.pmtiles', '')
+                        self.minio_client.fput_object(
+                            MINIO_CONFIG['bucket'],
+                            minio_path_no_ext,
                             local_file
                         )
                         
@@ -1398,7 +1417,8 @@ class PMNCompiler:
                         pmtiles_urls[theme].append(pmtiles_url)
                         
                         file_size_mb = os.path.getsize(local_file) / (1024 * 1024)
-                        logger.info(f"    ✅ Generated: {minio_path} ({file_size_mb:.2f} MB)")
+                        logger.info(f"    ✅ Uploaded: {minio_path} ({file_size_mb:.2f} MB)")
+                        logger.info(f"    ✅ Uploaded: {minio_path_no_ext} (no ext)")
                         total_generated += 1
                         
                         # Cleanup local file to save space
@@ -1440,9 +1460,112 @@ class PMNCompiler:
             logger.error(traceback.format_exc())
             raise
 
+    def step_9c_register_geoportal_layers(self, pmtiles_urls: Dict[str, str], pmtiles_bpdas_urls: Dict[str, List[str]]):
+        """
+        Step 9C: Register layers to geoportal.layers table (94%)
+        
+        Insert layer metadata ke table postgres.geoportal.layers untuk:
+        1. PMTiles Nasional (Existing & Potensi)
+        2. PMTiles per BPDAS
+        
+        Args:
+            pmtiles_urls: Dict dengan URL PMTiles nasional {'existing': url, 'potensi': url}
+            pmtiles_bpdas_urls: Dict dengan list URL PMTiles per BPDAS
+        """
+        logger.info("Step 9C: Registering layers to geoportal.layers...")
+        logger.info("=" * 60)
+        
+        try:
+            conn = self._get_db_connection()
+            cursor = conn.cursor()
+            
+            layers_inserted = 0
+            layers_updated = 0
+            
+            # 1. Register PMTiles Nasional
+            for theme in ['existing', 'potensi']:
+                if theme not in pmtiles_urls:
+                    continue
+                    
+                url = pmtiles_urls[theme]
+                theme_display = 'Existing' if theme == 'existing' else 'Potensi'
+                layer_name = f"{theme_display} Mangrove {self.year}"
+                
+                # Prepare layer JSON
+                layer_json = json.dumps({
+                    "url": url,
+                    "format": "VectorTiles",
+                    "maxzoom": "15",
+                    "minzoom": "5",
+                    "name": layer_name
+                })
+                
+                # Check if layer already exists
+                cursor.execute("""
+                    SELECT id FROM geoportal.layers 
+                    WHERE nama = %s AND type = 'layers'
+                """, (layer_name,))
+                
+                existing = cursor.fetchone()
+                
+                if existing:
+                    # Update existing layer
+                    cursor.execute("""
+                        UPDATE geoportal.layers 
+                        SET layer = %s, date_created = %s, description = %s
+                        WHERE id = %s
+                    """, (layer_json, datetime.now().date(), layer_name, existing[0]))
+                    layers_updated += 1
+                    logger.info(f"  ✅ Updated: {layer_name} (id={existing[0]})")
+                else:
+                    # Insert new layer
+                    cursor.execute("""
+                        INSERT INTO geoportal.layers 
+                        (layer, style, public, date_created, description, owner, nama, avatar, fields, status, immortal, type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        layer_json,           # layer
+                        '{}',                 # style
+                        False,                # public
+                        datetime.now().date(), # date_created
+                        layer_name,           # description
+                        '',                   # owner
+                        layer_name,           # nama
+                        '/icons/geo-2.png',   # avatar
+                        '',                   # fields
+                        '',                   # status
+                        False,                # immortal
+                        'layers'              # type
+                    ))
+                    new_id = cursor.fetchone()[0]
+                    layers_inserted += 1
+                    logger.info(f"  ✅ Inserted: {layer_name} (id={new_id})")
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            # Summary
+            logger.info("\n" + "=" * 60)
+            logger.info("GEOPORTAL LAYERS REGISTRATION SUMMARY:")
+            logger.info(f"  Layers inserted: {layers_inserted}")
+            logger.info(f"  Layers updated: {layers_updated}")
+            logger.info(f"  Total: {layers_inserted + layers_updated}")
+            logger.info("=" * 60)
+            
+            self._update_progress(94)
+            logger.info("Step 9C completed: Geoportal layers registration finished")
+            
+        except Exception as e:
+            logger.error(f"Step 9C failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            raise
+
     def step_10_update_metadata(self, converted_files: Dict[str, Dict[str, str]], pmtiles_urls: Dict[str, str]):
         """Step 10: Update Metadata (95%)"""
-        logger.info("Step 10: Updating metadata...")
+        logger.info("Step 10: Updating metadata..."))
         
         try:
             conn = self._get_db_connection()
@@ -2683,6 +2806,9 @@ class PMNCompiler:
             
             # Step 9B: Generate PMTiles per BPDAS
             pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
+            
+            # Step 9C: Register layers to geoportal.layers
+            self.step_9c_register_geoportal_layers(pmtiles_urls, pmtiles_bpdas_urls)
             
             # Step 10: Update metadata
             self.step_10_update_metadata(converted_files, pmtiles_urls)
