@@ -23,8 +23,8 @@ import requests
 import psycopg2
 import psycopg2.extras
 import geopandas as gpd
-from minio import Minio
-from minio.error import S3Error
+import boto3
+from botocore.exceptions import ClientError
 import pandas as pd
 from pathlib import Path
 
@@ -36,20 +36,21 @@ DB_CONFIG = {
     'password': '~nagha2025yasha@~'
 }
 
-# Konfigurasi MinIO
-MINIO_CONFIG = {
-    'host': '52.76.171.132:9005',
-    'public_host': 'https://api-minio.ptnaghayasha.com',
+# Konfigurasi AWS S3
+S3_CONFIG = {
+    'access_key': '',
+    'secret_key': '',
+    'endpoint_url': 'https://s3.ap-southeast-3.amazonaws.com',
+    'public_host': 'https://idpm-bucket.s3.ap-southeast-3.amazonaws.com',
     'bucket': 'idpm',
-    'access_key': 'SvMJ2t6I3QPqEheG9xDd',
-    'secret_key': 'F2uZ4W1pwptDzM4DzbGAfT8mH8SZN1ozsyaQYTEF'
+    'region': 'ap-southeast-3'
 }
 
 # Konfigurasi PMTiles per BPDAS
 PMTILES_BPDAS_CONFIG = {
     'minzoom': 4,
     'maxzoom': 17,
-    'minio_prefix': 'static/layer'  # Base path di MinIO: static/layer/{theme}/{year}/bpdas/
+    's3_prefix': 'static/layer'  # Base path di S3: static/layer/{theme}/{year}/bpdas/
 }
 
 # Mapping nama database BPDAS ke slug yang benar
@@ -110,29 +111,29 @@ class PMNCompiler:
     def __init__(self, process_id: str, year: int):
         self.process_id = process_id
         self.year = year
-        self.minio_client = None
+        self.s3_client = None
         self.temp_dir = None
         self.accessible_bpdas = []  # Add this line
         
-        # Initialize MinIO client
-        self._init_minio()
+        # Initialize S3 client
+        self._init_s3()
         
         # Create temporary directory
         self.temp_dir = tempfile.mkdtemp(prefix=f'pmn_compiler_{year}_')
         logger.info(f"Temporary directory created: {self.temp_dir}")
 
-    def _init_minio(self):
-        """Initialize MinIO client"""
+    def _init_s3(self):
+        """Initialize AWS S3 client"""
         try:
-            self.minio_client = Minio(
-                MINIO_CONFIG['host'],
-                access_key=MINIO_CONFIG['access_key'],
-                secret_key=MINIO_CONFIG['secret_key'],
-                secure=False
+            self.s3_client = boto3.client(
+                's3',
+                aws_access_key_id=S3_CONFIG['access_key'],
+                aws_secret_access_key=S3_CONFIG['secret_key'],
+                region_name=S3_CONFIG['region']
             )
-            logger.info("MinIO client initialized successfully")
+            logger.info("AWS S3 client initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize MinIO client: {e}")
+            logger.error(f"Failed to initialize S3 client: {e}")
             raise
 
     def _get_db_connection(self, database: str = 'postgres') -> psycopg2.extensions.connection:
@@ -171,29 +172,30 @@ class PMNCompiler:
             logger.error(f"Failed to update progress: {e}")
             raise
 
-    def _check_minio_connection(self) -> bool:
-        """Check MinIO connection and bucket accessibility"""
-        logger.info("Checking MinIO connection...")
+    def _check_s3_connection(self) -> bool:
+        """Check AWS S3 connection and bucket accessibility"""
+        logger.info("Checking AWS S3 connection...")
         
         try:
-            # Check if bucket exists
-            if not self.minio_client.bucket_exists(MINIO_CONFIG['bucket']):
-                logger.error(f"MinIO bucket '{MINIO_CONFIG['bucket']}' does not exist")
-                return False
-            
-            logger.info(f"MinIO bucket '{MINIO_CONFIG['bucket']}' is accessible")
+            # Check if bucket exists by listing objects
+            self.s3_client.head_bucket(Bucket=S3_CONFIG['bucket'])
+            logger.info(f"S3 bucket '{S3_CONFIG['bucket']}' is accessible")
             
             # Try to list objects (minimal operation to verify permissions)
-            list(self.minio_client.list_objects(MINIO_CONFIG['bucket'], prefix='test/', recursive=False))
-            logger.info("MinIO read/write permissions verified")
+            self.s3_client.list_objects_v2(Bucket=S3_CONFIG['bucket'], Prefix='test/', MaxKeys=1)
+            logger.info("S3 read/write permissions verified")
             
             return True
             
-        except S3Error as e:
-            logger.error(f"MinIO S3 error: {e}")
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code == '404':
+                logger.error(f"S3 bucket '{S3_CONFIG['bucket']}' does not exist")
+            else:
+                logger.error(f"S3 error: {e}")
             return False
         except Exception as e:
-            logger.error(f"MinIO connection check failed: {e}")
+            logger.error(f"S3 connection check failed: {e}")
             return False
 
     def _check_database_connections(self, bpdas_list: List[str]) -> Dict[str, bool]:
@@ -418,9 +420,9 @@ class PMNCompiler:
         all_checks_passed = True
         
         try:
-            # 1. Check MinIO connection
-            if not self._check_minio_connection():
-                logger.error("PREFLIGHT FAILED: MinIO connection check failed")
+            # 1. Check S3 connection
+            if not self._check_s3_connection():
+                logger.error("PREFLIGHT FAILED: S3 connection check failed")
                 all_checks_passed = False
             
             # 2. Check system requirements
@@ -867,30 +869,29 @@ class PMNCompiler:
             logger.error(f"Step 4 failed: {e}")
             raise
     
-    def step_5_clean_minio_files(self):
-        """Step 5: Bersihkan File Lama di MinIO (50%)"""
-        logger.info("Step 5: Cleaning old MinIO files...")
+    def step_5_clean_s3_files(self):
+        """Step 5: Bersihkan File Lama di S3 (50%)"""
+        logger.info("Step 5: Cleaning old S3 files...")
         
         try:
             # List and delete files in pmn-result/{year}/ path
             prefix = f"pmn-result/{self.year}/"
             
-            objects = self.minio_client.list_objects(
-                MINIO_CONFIG['bucket'], 
-                prefix=prefix, 
-                recursive=True
-            )
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            pages = paginator.paginate(Bucket=S3_CONFIG['bucket'], Prefix=prefix)
             
             deleted_count = 0
-            for obj in objects:
-                self.minio_client.remove_object(MINIO_CONFIG['bucket'], obj.object_name)
-                deleted_count += 1
-                logger.info(f"Deleted: {obj.object_name}")
+            for page in pages:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        self.s3_client.delete_object(Bucket=S3_CONFIG['bucket'], Key=obj['Key'])
+                        deleted_count += 1
+                        logger.info(f"Deleted: {obj['Key']}")
             
-            logger.info(f"Deleted {deleted_count} files from MinIO")
+            logger.info(f"Deleted {deleted_count} files from S3")
             
             self._update_progress(50)
-            logger.info("Step 5 completed: MinIO files cleaned")
+            logger.info("Step 5 completed: S3 files cleaned")
             
         except Exception as e:
             logger.error(f"Step 5 failed: {e}")
@@ -908,10 +909,10 @@ class PMNCompiler:
             
             for pmtiles_file in pmtiles_files:
                 try:
-                    self.minio_client.remove_object(MINIO_CONFIG['bucket'], pmtiles_file)
+                    self.s3_client.delete_object(Bucket=S3_CONFIG['bucket'], Key=pmtiles_file)
                     logger.info(f"Deleted PMTiles: {pmtiles_file}")
-                except S3Error as e:
-                    if e.code == 'NoSuchKey':
+                except ClientError as e:
+                    if e.response['Error']['Code'] == '404':
                         logger.info(f"PMTiles file not found (already deleted): {pmtiles_file}")
                     else:
                         raise
@@ -1231,26 +1232,26 @@ class PMNCompiler:
                     geojson_file
                 ], check=True)
                 
-                # Upload to MinIO - dengan ekstensi .pmtiles
-                minio_path_with_ext = f"layers/{theme.upper()}{self.year}.pmtiles"
-                self.minio_client.fput_object(
-                    MINIO_CONFIG['bucket'],
-                    minio_path_with_ext,
-                    pmtiles_file
+                # Upload to S3 - dengan ekstensi .pmtiles
+                s3_path_with_ext = f"layers/{theme.upper()}{self.year}.pmtiles"
+                self.s3_client.upload_file(
+                    pmtiles_file,
+                    S3_CONFIG['bucket'],
+                    s3_path_with_ext
                 )
-                logger.info(f"  ✅ Uploaded: {minio_path_with_ext}")
+                logger.info(f"  ✅ Uploaded: {s3_path_with_ext}")
                 
-                # Upload to MinIO - tanpa ekstensi (untuk legacy/geoportal compatibility)
-                minio_path_no_ext = f"layers/{theme.upper()}{self.year}"
-                self.minio_client.fput_object(
-                    MINIO_CONFIG['bucket'],
-                    minio_path_no_ext,
-                    pmtiles_file
+                # Upload to S3 - tanpa ekstensi (untuk legacy/geoportal compatibility)
+                s3_path_no_ext = f"layers/{theme.upper()}{self.year}"
+                self.s3_client.upload_file(
+                    pmtiles_file,
+                    S3_CONFIG['bucket'],
+                    s3_path_no_ext
                 )
-                logger.info(f"  ✅ Uploaded: {minio_path_no_ext}")
+                logger.info(f"  ✅ Uploaded: {s3_path_no_ext}")
                 
                 # URL tanpa ekstensi untuk geoportal.layers
-                pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{minio_path_no_ext}"
+                pmtiles_url = f"{S3_CONFIG['public_host']}/{s3_path_no_ext}"
                 pmtiles_urls[theme] = pmtiles_url
                 
                 logger.info(f"Generated and uploaded PMTiles for {theme}: {pmtiles_url}")
@@ -1324,7 +1325,7 @@ class PMNCompiler:
         Step 9B: Generate PMTiles per BPDAS (92%)
         
         Menghasilkan file PMTiles terpisah untuk setiap BPDAS yang ada di data.
-        Output di-upload ke MinIO path: layers/bpdas/{bpdas_slug}_{year}_{theme}.pmtiles
+        Output di-upload ke S3 path: static/layer/{theme}/{year}/bpdas/{bpdas_slug}_{year}.pmtiles
         
         Returns:
             Dict dengan key 'existing' dan 'potensi', masing-masing berisi list URL PMTiles
@@ -1370,7 +1371,7 @@ class PMNCompiler:
                     layer_name = f"{theme}_{bpdas_slug}_{self.year}"
                     local_file = os.path.join(pmtiles_local_dir, f"{bpdas_slug}_{self.year}.pmtiles")
                     # Path: static/layer/{theme}/{year}/bpdas/{bpdas_slug}_{year}.pmtiles
-                    minio_path = f"{PMTILES_BPDAS_CONFIG['minio_prefix']}/{theme}/{self.year}/bpdas/{bpdas_slug}_{self.year}.pmtiles"
+                    s3_path = f"{PMTILES_BPDAS_CONFIG['s3_prefix']}/{theme}/{self.year}/bpdas/{bpdas_slug}_{self.year}.pmtiles"
                     
                     logger.info(f"  [{idx}/{len(bpdas_list)}] Processing: {bpdas_name} -> {bpdas_slug}")
                     
@@ -1398,27 +1399,27 @@ class PMNCompiler:
                             total_failed += 1
                             continue
                         
-                        # Upload ke MinIO - dengan ekstensi .pmtiles
-                        self.minio_client.fput_object(
-                            MINIO_CONFIG['bucket'],
-                            minio_path,
-                            local_file
+                        # Upload ke S3 - dengan ekstensi .pmtiles
+                        self.s3_client.upload_file(
+                            local_file,
+                            S3_CONFIG['bucket'],
+                            s3_path
                         )
                         
-                        # Upload ke MinIO - tanpa ekstensi (untuk geoportal compatibility)
-                        minio_path_no_ext = minio_path.replace('.pmtiles', '')
-                        self.minio_client.fput_object(
-                            MINIO_CONFIG['bucket'],
-                            minio_path_no_ext,
-                            local_file
+                        # Upload ke S3 - tanpa ekstensi (untuk geoportal compatibility)
+                        s3_path_no_ext = s3_path.replace('.pmtiles', '')
+                        self.s3_client.upload_file(
+                            local_file,
+                            S3_CONFIG['bucket'],
+                            s3_path_no_ext
                         )
                         
-                        pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{minio_path}"
+                        pmtiles_url = f"{S3_CONFIG['public_host']}/{s3_path}"
                         pmtiles_urls[theme].append(pmtiles_url)
                         
                         file_size_mb = os.path.getsize(local_file) / (1024 * 1024)
-                        logger.info(f"    ✅ Uploaded: {minio_path} ({file_size_mb:.2f} MB)")
-                        logger.info(f"    ✅ Uploaded: {minio_path_no_ext} (no ext)")
+                        logger.info(f"    ✅ Uploaded: {s3_path} ({file_size_mb:.2f} MB)")
+                        logger.info(f"    ✅ Uploaded: {s3_path_no_ext} (no ext)")
                         total_generated += 1
                         
                         # Cleanup local file to save space
@@ -1430,8 +1431,8 @@ class PMNCompiler:
                     except subprocess.CalledProcessError as e:
                         logger.error(f"    ❌ Failed: {e}")
                         total_failed += 1
-                    except S3Error as e:
-                        logger.error(f"    ❌ MinIO upload failed: {e}")
+                    except ClientError as e:
+                        logger.error(f"    ❌ S3 upload failed: {e}")
                         total_failed += 1
                     except Exception as e:
                         logger.error(f"    ❌ Unexpected error: {e}")
@@ -1584,25 +1585,25 @@ class PMNCompiler:
                 # Get file size
                 file_size = os.path.getsize(gdb_file)
                 
-                # Upload files to MinIO
-                gdb_minio_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb.zip"
-                shp_minio_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.zip"
+                # Upload files to S3
+                gdb_s3_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.gdb.zip"
+                shp_s3_path = f"pmn-result/{self.year}/AR_25K_PETAMANGROVE_{theme.upper()}_{self.year}.zip"
                 
-                self.minio_client.fput_object(
-                    MINIO_CONFIG['bucket'],
-                    gdb_minio_path,
-                    converted_files[theme]['gdb_zip']
+                self.s3_client.upload_file(
+                    converted_files[theme]['gdb_zip'],
+                    S3_CONFIG['bucket'],
+                    gdb_s3_path
                 )
                 
-                self.minio_client.fput_object(
-                    MINIO_CONFIG['bucket'],
-                    shp_minio_path,
-                    converted_files[theme]['shp_zip']
+                self.s3_client.upload_file(
+                    converted_files[theme]['shp_zip'],
+                    S3_CONFIG['bucket'],
+                    shp_s3_path
                 )
                 
                 # Construct URLs
-                gdb_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{gdb_minio_path}"
-                shp_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{shp_minio_path}"
+                gdb_url = f"{S3_CONFIG['public_host']}/{gdb_s3_path}"
+                shp_url = f"{S3_CONFIG['public_host']}/{shp_s3_path}"
                 
                 # Update metadata
                 title = f"Peta {'Eksisting' if theme == 'existing' else 'Potensi'} Mangrove {self.year}"
@@ -1652,12 +1653,12 @@ class PMNCompiler:
         except Exception as e:
             logger.warning(f"Failed to cleanup temporary directory: {e}")
 
-    def _check_file_exists_in_minio(self, object_path: str) -> bool:
-        """Check if file exists in MinIO"""
+    def _check_file_exists_in_s3(self, object_path: str) -> bool:
+        """Check if file exists in S3"""
         try:
-            self.minio_client.stat_object(MINIO_CONFIG['bucket'], object_path)
+            self.s3_client.head_object(Bucket=S3_CONFIG['bucket'], Key=object_path)
             return True
-        except S3Error:
+        except ClientError:
             return False
 
     def _check_year_files_exist(self, year: int) -> Dict[str, bool]:
@@ -1667,20 +1668,20 @@ class PMNCompiler:
         # Check PMTiles
         pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
         pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
-        files_status['pmtiles_existing'] = self._check_file_exists_in_minio(pmtiles_existing)
-        files_status['pmtiles_potensi'] = self._check_file_exists_in_minio(pmtiles_potensi)
+        files_status['pmtiles_existing'] = self._check_file_exists_in_s3(pmtiles_existing)
+        files_status['pmtiles_potensi'] = self._check_file_exists_in_s3(pmtiles_potensi)
         
         # Check Shapefile
         shp_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.zip"
         shp_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.zip"
-        files_status['shp_existing'] = self._check_file_exists_in_minio(shp_existing)
-        files_status['shp_potensi'] = self._check_file_exists_in_minio(shp_potensi)
+        files_status['shp_existing'] = self._check_file_exists_in_s3(shp_existing)
+        files_status['shp_potensi'] = self._check_file_exists_in_s3(shp_potensi)
         
         # Check GDB
         gdb_existing = f"pmn-result/{year}/AR_25K_PETAMANGROVE_EXISTING_{year}.gdb.zip"
         gdb_potensi = f"pmn-result/{year}/AR_25K_PETAMANGROVE_POTENSI_{year}.gdb.zip"
-        files_status['gdb_existing'] = self._check_file_exists_in_minio(gdb_existing)
-        files_status['gdb_potensi'] = self._check_file_exists_in_minio(gdb_potensi)
+        files_status['gdb_existing'] = self._check_file_exists_in_s3(gdb_existing)
+        files_status['gdb_potensi'] = self._check_file_exists_in_s3(gdb_potensi)
         
         return files_status
 
@@ -1835,8 +1836,8 @@ class PMNCompiler:
         pmtiles_existing = f"layers/EXISTING{year}.pmtiles"
         pmtiles_potensi = f"layers/POTENSI{year}.pmtiles"
         
-        existing_exists = self._check_file_exists_in_minio(pmtiles_existing)
-        potensi_exists = self._check_file_exists_in_minio(pmtiles_potensi)
+        existing_exists = self._check_file_exists_in_s3(pmtiles_existing)
+        potensi_exists = self._check_file_exists_in_s3(pmtiles_potensi)
         
         if not (existing_exists or potensi_exists):
             logger.warning(f"No PMTiles files found for year {year}, skipping conversion")
@@ -1844,7 +1845,7 @@ class PMNCompiler:
         
         logger.info(f"PMTiles availability for {year}: existing={existing_exists}, potensi={potensi_exists}")
         
-        # Download PMTiles from MinIO
+        # Download PMTiles from S3
         temp_pmtiles_dir = os.path.join(self.temp_dir, f'pmtiles_{year}')
         os.makedirs(temp_pmtiles_dir, exist_ok=True)
         
@@ -1855,8 +1856,8 @@ class PMNCompiler:
             # Download existing PMTiles if available
             if existing_exists:
                 existing_pmtiles = os.path.join(temp_pmtiles_dir, f'existing_{year}.pmtiles')
-                logger.info(f"Downloading existing PMTiles from MinIO: {pmtiles_existing}")
-                self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_existing, existing_pmtiles)
+                logger.info(f"Downloading existing PMTiles from S3: {pmtiles_existing}")
+                self.s3_client.download_file(S3_CONFIG['bucket'], pmtiles_existing, existing_pmtiles)
                 
                 # Verify download
                 if not os.path.exists(existing_pmtiles) or os.path.getsize(existing_pmtiles) == 0:
@@ -1869,8 +1870,8 @@ class PMNCompiler:
             # Download potensi PMTiles if available
             if potensi_exists:
                 potensi_pmtiles = os.path.join(temp_pmtiles_dir, f'potensi_{year}.pmtiles')
-                logger.info(f"Downloading potensi PMTiles from MinIO: {pmtiles_potensi}")
-                self.minio_client.fget_object(MINIO_CONFIG['bucket'], pmtiles_potensi, potensi_pmtiles)
+                logger.info(f"Downloading potensi PMTiles from S3: {pmtiles_potensi}")
+                self.s3_client.download_file(S3_CONFIG['bucket'], pmtiles_potensi, potensi_pmtiles)
                 
                 # Verify download
                 if not os.path.exists(potensi_pmtiles) or os.path.getsize(potensi_pmtiles) == 0:
@@ -2544,15 +2545,15 @@ class PMNCompiler:
                     if os.path.exists(file_path):
                         zipf.write(file_path, os.path.basename(file_path))
             
-            # Validate and upload Shapefile to MinIO
-            shp_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            # Validate and upload Shapefile to S3
+            shp_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
             
             if self._validate_shapefile(shp_zip):
                 shp_size = os.path.getsize(shp_zip)
                 logger.info(f"✓ Shapefile validation passed: {shp_size:,} bytes")
                 
-                self.minio_client.fput_object(MINIO_CONFIG['bucket'], shp_minio_path, shp_zip)
-                logger.info(f"✓ Uploaded Shapefile: {shp_minio_path} ({shp_size:,} bytes)")
+                self.s3_client.upload_file(shp_zip, S3_CONFIG['bucket'], shp_s3_path)
+                logger.info(f"✓ Uploaded Shapefile: {shp_s3_path} ({shp_size:,} bytes)")
             else:
                 raise Exception(f"Shapefile validation failed: {shp_zip}")
             
@@ -2601,21 +2602,21 @@ class PMNCompiler:
                         arcname = os.path.relpath(file_path, os.path.dirname(gdb_dir))
                         zipf.write(file_path, arcname)
             
-            # Validate and upload GDB to MinIO
-            gdb_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            # Validate and upload GDB to S3
+            gdb_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
             
             if self._validate_gdb(gdb_zip):
                 gdb_size = os.path.getsize(gdb_zip)
                 logger.info(f"✓ GDB validation passed: {gdb_size:,} bytes")
                 
-                self.minio_client.fput_object(MINIO_CONFIG['bucket'], gdb_minio_path, gdb_zip)
-                logger.info(f"✓ Uploaded GDB: {gdb_minio_path} ({gdb_size:,} bytes)")
+                self.s3_client.upload_file(gdb_zip, S3_CONFIG['bucket'], gdb_s3_path)
+                logger.info(f"✓ Uploaded GDB: {gdb_s3_path} ({gdb_size:,} bytes)")
             else:
                 raise Exception(f"GDB validation failed: {gdb_zip}")
             
             # Update metadata in compiler_datasets
             pmtiles_path = f"layers/{theme.upper()}{year}.pmtiles"
-            pmtiles_url = f"{MINIO_CONFIG['public_host']}/{MINIO_CONFIG['bucket']}/{pmtiles_path}"
+            pmtiles_url = f"{S3_CONFIG['public_host']}/{pmtiles_path}"
             self._update_historical_metadata(year, theme, shp_zip, gdb_zip, pmtiles_url)
             
             logger.info(f"✅ Successfully completed conversion and metadata update for {theme} {year}")
@@ -2645,11 +2646,11 @@ class PMNCompiler:
             file_size = os.path.getsize(gdb_zip)
             
             # Construct URLs
-            gdb_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
-            shp_minio_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
+            gdb_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.gdb.zip"
+            shp_s3_path = f"pmn-result/{year}/AR_25K_PETAMANGROVE_{theme.upper()}_{year}.zip"
             
-            gdb_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{gdb_minio_path}"
-            shp_url = f"http://52.76.171.132:9008/{MINIO_CONFIG['bucket']}/{shp_minio_path}"
+            gdb_url = f"{S3_CONFIG['public_host']}/{gdb_s3_path}"
+            shp_url = f"{S3_CONFIG['public_host']}/{shp_s3_path}"
             
             # Get row count from shapefile
             try:
@@ -2789,8 +2790,8 @@ class PMNCompiler:
             # Step 4: Aggregate data
             self.step_4_aggregate_data(bpdas_list)
             
-            # Step 5: Clean MinIO files
-            self.step_5_clean_minio_files()
+            # Step 5: Clean S3 files
+            self.step_5_clean_s3_files()
             
             # Step 6: Delete old PMTiles
             self.step_6_delete_old_pmtiles()
