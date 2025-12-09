@@ -1249,7 +1249,7 @@ class PMNCompiler:
                     S3_CONFIG['bucket'],
                     s3_path_no_ext
                 )
-                logger.info(f"  ✅ Uploaded: {s3_path_no_ext}"))
+                logger.info(f"  ✅ Uploaded: {s3_path_no_ext}")
                 
                 # URL tanpa ekstensi untuk geoportal.layers
                 pmtiles_url = f"{S3_CONFIG['public_host']}/{s3_path_no_ext}"
