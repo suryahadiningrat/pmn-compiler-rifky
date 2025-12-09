@@ -42,7 +42,7 @@ S3_CONFIG = {
     'secret_key': '',
     'endpoint_url': 'https://s3.ap-southeast-3.amazonaws.com',
     'public_host': 'https://idpm-bucket.s3.ap-southeast-3.amazonaws.com',
-    'bucket': 'idpm',
+    'bucket': 'idpm-bucket',
     'region': 'ap-southeast-3'
 }
 
