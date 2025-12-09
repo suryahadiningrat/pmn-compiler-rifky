@@ -1527,18 +1527,18 @@ class PMNCompiler:
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                     """, (
-                        layer_json,           # layer (JSON)
-                        '{}',                 # style (JSON)
-                        False,                # public
-                        datetime.now().date(), # date_created
-                        layer_name,           # description
-                        '',                   # owner
-                        layer_name,           # nama
-                        '/icons/geo-2.png',   # avatar
-                        '{}',                 # fields (JSON - must be valid JSON)
-                        '{}',                 # status (JSON - must be valid JSON)
-                        False,                # immortal
-                        'layers'              # type
+                        layer_json,           # layer (json)
+                        '{}',                 # style (json)
+                        False,                # public (bool)
+                        datetime.now().date(), # date_created (date)
+                        layer_name,           # description (text)
+                        '',                   # owner (varchar)
+                        layer_name,           # nama (text)
+                        '/icons/geo-2.png',   # avatar (text)
+                        '{}',                 # fields (json)
+                        'READY',              # status (text) - values: READY, BELUMPROSES, etc
+                        False,                # immortal (bool)
+                        'layers'              # type (varchar)
                     ))
                     new_id = cursor.fetchone()[0]
                     layers_inserted += 1
