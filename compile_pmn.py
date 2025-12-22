@@ -502,8 +502,8 @@ class PMNCompiler:
             
             # Drop dan recreate tables untuk memastikan struktur yang benar
             tables_config = {
-                f'existing_{self.year}_copy1': """
-                    CREATE TABLE IF NOT EXISTS pmn.existing_{year}_copy1 (
+                f'existing_{self.year}': """
+                    CREATE TABLE IF NOT EXISTS pmn.existing_{year} (
                         ogc_fid SERIAL PRIMARY KEY,
                         geometry GEOMETRY(MultiPolygon, 4326),
                         bpdas VARCHAR(255),
@@ -536,8 +536,8 @@ class PMNCompiler:
                         catatan_p TEXT
                     )
                 """,
-                f'potensi_{self.year}_copy1': """
-                    CREATE TABLE IF NOT EXISTS pmn.potensi_{year}_copy1 (
+                f'potensi_{self.year}': """
+                    CREATE TABLE IF NOT EXISTS pmn.potensi_{year} (
                         ogc_fid SERIAL PRIMARY KEY,
                         geometry GEOMETRY(MultiPolygon, 4326),
                         tahun VARCHAR(50),
@@ -604,8 +604,8 @@ class PMNCompiler:
             
             # Delete all records from target tables
             tables_to_clean = [
-                f'pmn.existing_{self.year}_copy1',
-                f'pmn.potensi_{self.year}_copy1'
+                f'pmn.existing_{self.year}',
+                f'pmn.potensi_{self.year}'
             ]
             
             for table in tables_to_clean:
@@ -701,7 +701,7 @@ class PMNCompiler:
                                 WHERE table_schema = 'pmn' AND table_name = %s
                                 AND column_name != 'ogc_fid'
                                 ORDER BY ordinal_position
-                            """, (f'potensi_{self.year}_copy1',))
+                            """, (f'potensi_{self.year}',))
                             target_cols = [row[0] for row in target_cursor.fetchall()]
                             
                             # Find matching columns
@@ -732,7 +732,7 @@ class PMNCompiler:
                                 if potensi_data:
                                     # Bulk insert
                                     insert_query = f"""
-                                        INSERT INTO pmn.potensi_{self.year}_copy1 
+                                        INSERT INTO pmn.potensi_{self.year} 
                                         ({', '.join([f'"{col}"' for col in matching_cols])}) 
                                         VALUES ({', '.join(['%s'] * len(matching_cols))})
                                     """
@@ -780,7 +780,7 @@ class PMNCompiler:
                                 WHERE table_schema = 'pmn' AND table_name = %s
                                 AND column_name != 'ogc_fid'
                                 ORDER BY ordinal_position
-                            """, (f'existing_{self.year}_copy1',))
+                            """, (f'existing_{self.year}',))
                             target_cols = [row[0] for row in target_cursor.fetchall()]
                             
                             # Find matching columns
@@ -811,7 +811,7 @@ class PMNCompiler:
                                 if existing_data:
                                     # Bulk insert
                                     insert_query = f"""
-                                        INSERT INTO pmn.existing_{self.year}_copy1 
+                                        INSERT INTO pmn.existing_{self.year} 
                                         ({', '.join([f'"{col}"' for col in matching_cols])}) 
                                         VALUES ({', '.join(['%s'] * len(matching_cols))})
                                     """
@@ -848,10 +848,10 @@ class PMNCompiler:
             target_conn.commit()
             
             # Log summary
-            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.existing_{self.year}_copy1")
+            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.existing_{self.year}")
             existing_count = target_cursor.fetchone()[0]
             
-            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.potensi_{self.year}_copy1")
+            target_cursor.execute(f"SELECT COUNT(*) FROM pmn.potensi_{self.year}")
             potensi_count = target_cursor.fetchone()[0]
             
             logger.info("=" * 60)
@@ -937,7 +937,7 @@ class PMNCompiler:
             # Export existing data
             logger.info("Exporting existing data...")
             existing_gdf = gpd.read_postgis(
-                f"SELECT * FROM pmn.existing_{self.year}_copy1",
+                f"SELECT * FROM pmn.existing_{self.year}",
                 conn,
                 geom_col='geometry'
             )
@@ -958,7 +958,7 @@ class PMNCompiler:
             # Export potensi data
             logger.info("Exporting potensi data...")
             potensi_gdf = gpd.read_postgis(
-                f"SELECT * FROM pmn.potensi_{self.year}_copy1",
+                f"SELECT * FROM pmn.potensi_{self.year}",
                 conn,
                 geom_col='geometry'
             )
@@ -1295,7 +1295,7 @@ class PMNCompiler:
             output_file: Path ke file output PMTiles
             layer_name: Nama layer dalam PMTiles
             schema: Schema database (pmn)
-            table: Nama tabel (existing_{year}_copy1 atau potensi_{year}_copy1)
+            table: Nama tabel (existing_{year} atau potensi_{year})
             bpdas_column: Nama kolom BPDAS
             bpdas_value: Nilai BPDAS untuk filter
         """
@@ -1346,7 +1346,7 @@ class PMNCompiler:
             total_failed = 0
             
             for theme in ['existing', 'potensi']:
-                table_name = f'{theme}_{self.year}_copy1'
+                table_name = f'{theme}_{self.year}'
                 
                 # Get distinct BPDAS values dari tabel
                 cursor.execute(f"""
