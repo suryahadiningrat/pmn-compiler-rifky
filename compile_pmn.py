@@ -713,19 +713,70 @@ class PMNCompiler:
                                 logger.info(f"Matching potensi columns ({len(matching_cols)}): {matching_cols[:5]}...")
                                 
                                 # Build select with geometry conversion
-                                select_fields = []
+                                select_fields_cols = []
                                 for col in matching_cols:
                                     if col.lower() == 'geometry':
-                                        select_fields.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                        select_fields_cols.append("ST_Force2D(ST_Multi(a.geometry)) AS geometry")
                                     else:
-                                        select_fields.append(f'"{col}"')  # Quote column names
+                                        select_fields_cols.append(f'a."{col}"')
                                 
-                                # Fetch data
-                                query = f"""
-                                    SELECT {', '.join(select_fields)} 
-                                    FROM public.potensi_{self.year}
-                                    WHERE geometry IS NOT NULL
-                                """
+                                # Check if QC table exists and has qcstatus
+                                qc_table = f"potensi_{self.year}_qc"
+                                has_qc_table = False
+                                
+                                bpdas_cursor.execute("""
+                                    SELECT EXISTS (
+                                        SELECT FROM information_schema.tables 
+                                        WHERE table_schema = 'public' 
+                                        AND table_name = %s
+                                    )
+                                """, (qc_table,))
+                                if bpdas_cursor.fetchone()[0]:
+                                    bpdas_cursor.execute("""
+                                        SELECT column_name 
+                                        FROM information_schema.columns 
+                                        WHERE table_schema = 'public' 
+                                        AND table_name = %s 
+                                        AND column_name = 'qcstatus'
+                                    """, (qc_table,))
+                                    if bpdas_cursor.fetchone():
+                                        has_qc_table = True
+                                
+                                # Build query
+                                if has_qc_table:
+                                    logger.info(f"Using QC table {qc_table} for filtering")
+                                    query = f"""
+                                        SELECT {', '.join(select_fields_cols)} 
+                                        FROM public.potensi_{self.year} a
+                                        JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
+                                        WHERE a.geometry IS NOT NULL
+                                        AND b.qcstatus IS NOT NULL
+                                        AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
+                                        AND NOT EXISTS (
+                                            SELECT 1
+                                            FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
+                                            WHERE LOWER(elem->>'title') != 'remarks'
+                                            AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                        )
+                                    """
+                                else:
+                                    # Fallback if no QC table (original logic without QC filter)
+                                    logger.warning(f"QC table {qc_table} not found or missing qcstatus, skipping filter")
+                                    
+                                    # Rebuild select without 'a.' prefix for simple query
+                                    simple_select = []
+                                    for col in matching_cols:
+                                        if col.lower() == 'geometry':
+                                            simple_select.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                        else:
+                                            simple_select.append(f'"{col}"')
+                                            
+                                    query = f"""
+                                        SELECT {', '.join(simple_select)} 
+                                        FROM public.potensi_{self.year}
+                                        WHERE geometry IS NOT NULL
+                                    """
+                                
                                 bpdas_cursor.execute(query)
                                 potensi_data = bpdas_cursor.fetchall()
                                 
@@ -792,19 +843,70 @@ class PMNCompiler:
                                 logger.info(f"Matching existing columns ({len(matching_cols)}): {matching_cols[:5]}...")
                                 
                                 # Build select with geometry conversion
-                                select_fields = []
+                                select_fields_cols = []
                                 for col in matching_cols:
                                     if col.lower() == 'geometry':
-                                        select_fields.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                        select_fields_cols.append("ST_Force2D(ST_Multi(a.geometry)) AS geometry")
                                     else:
-                                        select_fields.append(f'"{col}"')
+                                        select_fields_cols.append(f'a."{col}"')
                                 
-                                # Fetch data
-                                query = f"""
-                                    SELECT {', '.join(select_fields)} 
-                                    FROM public.existing_{self.year}
-                                    WHERE geometry IS NOT NULL
-                                """
+                                # Check if QC table exists and has qcstatus
+                                qc_table = f"existing_{self.year}_qc"
+                                has_qc_table = False
+                                
+                                bpdas_cursor.execute("""
+                                    SELECT EXISTS (
+                                        SELECT FROM information_schema.tables 
+                                        WHERE table_schema = 'public' 
+                                        AND table_name = %s
+                                    )
+                                """, (qc_table,))
+                                if bpdas_cursor.fetchone()[0]:
+                                    bpdas_cursor.execute("""
+                                        SELECT column_name 
+                                        FROM information_schema.columns 
+                                        WHERE table_schema = 'public' 
+                                        AND table_name = %s 
+                                        AND column_name = 'qcstatus'
+                                    """, (qc_table,))
+                                    if bpdas_cursor.fetchone():
+                                        has_qc_table = True
+                                
+                                # Build query
+                                if has_qc_table:
+                                    logger.info(f"Using QC table {qc_table} for filtering")
+                                    query = f"""
+                                        SELECT {', '.join(select_fields_cols)} 
+                                        FROM public.existing_{self.year} a
+                                        JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
+                                        WHERE a.geometry IS NOT NULL
+                                        AND b.qcstatus IS NOT NULL
+                                        AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
+                                        AND NOT EXISTS (
+                                            SELECT 1
+                                            FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
+                                            WHERE LOWER(elem->>'title') != 'remarks'
+                                            AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                        )
+                                    """
+                                else:
+                                    # Fallback if no QC table
+                                    logger.warning(f"QC table {qc_table} not found or missing qcstatus, skipping filter")
+                                    
+                                    # Rebuild select without 'a.' prefix for simple query
+                                    simple_select = []
+                                    for col in matching_cols:
+                                        if col.lower() == 'geometry':
+                                            simple_select.append("ST_Force2D(ST_Multi(geometry)) AS geometry")
+                                        else:
+                                            simple_select.append(f'"{col}"')
+                                            
+                                    query = f"""
+                                        SELECT {', '.join(simple_select)} 
+                                        FROM public.existing_{self.year}
+                                        WHERE geometry IS NOT NULL
+                                    """
+                                
                                 bpdas_cursor.execute(query)
                                 existing_data = bpdas_cursor.fetchall()
                                 
@@ -2792,37 +2894,37 @@ class PMNCompiler:
             self.step_4_aggregate_data(bpdas_list)
             
             # Step 5: Clean S3 files
-            self.step_5_clean_s3_files()
+            # self.step_5_clean_s3_files()
             
-            # Step 6: Delete old PMTiles
-            self.step_6_delete_old_pmtiles()
+            # # Step 6: Delete old PMTiles
+            # self.step_6_delete_old_pmtiles()
             
-            # Step 7: Export to GeoJSON
-            geojson_files = self.step_7_export_geojson()
+            # # Step 7: Export to GeoJSON
+            # geojson_files = self.step_7_export_geojson()
             
-            # Step 8: Convert formats
-            converted_files = self.step_8_convert_formats(geojson_files)
+            # # Step 8: Convert formats
+            # converted_files = self.step_8_convert_formats(geojson_files)
             
-            # Step 9: Generate PMTiles (Nasional)
-            pmtiles_urls = self.step_9_generate_pmtiles(geojson_files)
+            # # Step 9: Generate PMTiles (Nasional)
+            # pmtiles_urls = self.step_9_generate_pmtiles(geojson_files)
             
-            # Step 9B: Generate PMTiles per BPDAS
-            pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
+            # # Step 9B: Generate PMTiles per BPDAS
+            # pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
             
-            # Step 9C: Register layers to geoportal.layers
-            self.step_9c_register_geoportal_layers(pmtiles_urls, pmtiles_bpdas_urls)
+            # # Step 9C: Register layers to geoportal.layers
+            # self.step_9c_register_geoportal_layers(pmtiles_urls, pmtiles_bpdas_urls)
             
-            # Step 10: Update metadata
-            self.step_10_update_metadata(converted_files, pmtiles_urls)
+            # # Step 10: Update metadata
+            # self.step_10_update_metadata(converted_files, pmtiles_urls)
             
-            # Step 11: Finalize
-            self.step_11_finalize()
+            # # Step 11: Finalize
+            # self.step_11_finalize()
             
-            logger.info("PMN compilation completed successfully!")
+            # logger.info("PMN compilation completed successfully!")
             
-            # Process historical years (2021 to current year)
-            logger.info("Starting historical years processing...")
-            self.process_historical_years()
+            # # Process historical years (2021 to current year)
+            # logger.info("Starting historical years processing...")
+            # self.process_historical_years()
             
         except Exception as e:
             logger.error(f"PMN compilation failed: {e}")
