@@ -5,3 +5,4 @@ pmtiles
 *.log
 references
 data
+venv

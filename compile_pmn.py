@@ -748,15 +748,20 @@ class PMNCompiler:
                                     query = f"""
                                         SELECT {', '.join(select_fields_cols)} 
                                         FROM public.potensi_{self.year} a
-                                        JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
+                                        LEFT JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
                                         WHERE a.geometry IS NOT NULL
-                                        AND b.qcstatus IS NOT NULL
-                                        AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
-                                        AND NOT EXISTS (
-                                            SELECT 1
-                                            FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
-                                            WHERE LOWER(elem->>'title') != 'remarks'
-                                            AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                        AND (
+                                            b.ogc_fid IS NULL
+                                            OR (
+                                                b.qcstatus IS NOT NULL
+                                                AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
+                                                AND NOT EXISTS (
+                                                    SELECT 1
+                                                    FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
+                                                    WHERE LOWER(elem->>'title') != 'remarks'
+                                                    AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                                )
+                                            )
                                         )
                                     """
                                 else:
@@ -878,15 +883,20 @@ class PMNCompiler:
                                     query = f"""
                                         SELECT {', '.join(select_fields_cols)} 
                                         FROM public.existing_{self.year} a
-                                        JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
+                                        LEFT JOIN public.{qc_table} b ON a.ogc_fid = b.ogc_fid
                                         WHERE a.geometry IS NOT NULL
-                                        AND b.qcstatus IS NOT NULL
-                                        AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
-                                        AND NOT EXISTS (
-                                            SELECT 1
-                                            FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
-                                            WHERE LOWER(elem->>'title') != 'remarks'
-                                            AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                        AND (
+                                            b.ogc_fid IS NULL
+                                            OR (
+                                                b.qcstatus IS NOT NULL
+                                                AND jsonb_typeof(b.qcstatus::jsonb) = 'array'
+                                                AND NOT EXISTS (
+                                                    SELECT 1
+                                                    FROM jsonb_array_elements(b.qcstatus::jsonb) AS elem
+                                                    WHERE LOWER(elem->>'title') != 'remarks'
+                                                    AND (elem->>'value' IS NULL OR LOWER(elem->>'value') NOT IN ('true', 'valid'))
+                                                )
+                                            )
                                         )
                                     """
                                 else:
@@ -2894,37 +2904,37 @@ class PMNCompiler:
             self.step_4_aggregate_data(bpdas_list)
             
             # Step 5: Clean S3 files
-            # self.step_5_clean_s3_files()
+            self.step_5_clean_s3_files()
             
-            # # Step 6: Delete old PMTiles
-            # self.step_6_delete_old_pmtiles()
+            # Step 6: Delete old PMTiles
+            self.step_6_delete_old_pmtiles()
             
-            # # Step 7: Export to GeoJSON
-            # geojson_files = self.step_7_export_geojson()
+            # Step 7: Export to GeoJSON
+            geojson_files = self.step_7_export_geojson()
             
-            # # Step 8: Convert formats
-            # converted_files = self.step_8_convert_formats(geojson_files)
+            # Step 8: Convert formats
+            converted_files = self.step_8_convert_formats(geojson_files)
             
-            # # Step 9: Generate PMTiles (Nasional)
-            # pmtiles_urls = self.step_9_generate_pmtiles(geojson_files)
+            # Step 9: Generate PMTiles (Nasional)
+            pmtiles_urls = self.step_9_generate_pmtiles(geojson_files)
             
-            # # Step 9B: Generate PMTiles per BPDAS
-            # pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
+            # Step 9B: Generate PMTiles per BPDAS
+            pmtiles_bpdas_urls = self.step_9b_generate_pmtiles_per_bpdas()
             
-            # # Step 9C: Register layers to geoportal.layers
-            # self.step_9c_register_geoportal_layers(pmtiles_urls, pmtiles_bpdas_urls)
+            # Step 9C: Register layers to geoportal.layers
+            self.step_9c_register_geoportal_layers(pmtiles_urls, pmtiles_bpdas_urls)
             
-            # # Step 10: Update metadata
-            # self.step_10_update_metadata(converted_files, pmtiles_urls)
+            # Step 10: Update metadata
+            self.step_10_update_metadata(converted_files, pmtiles_urls)
             
-            # # Step 11: Finalize
-            # self.step_11_finalize()
+            # Step 11: Finalize
+            self.step_11_finalize()
             
-            # logger.info("PMN compilation completed successfully!")
+            logger.info("PMN compilation completed successfully!")
             
-            # # Process historical years (2021 to current year)
-            # logger.info("Starting historical years processing...")
-            # self.process_historical_years()
+            # Process historical years (2021 to current year)
+            logger.info("Starting historical years processing...")
+            self.process_historical_years()
             
         except Exception as e:
             logger.error(f"PMN compilation failed: {e}")
